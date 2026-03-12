@@ -1,3 +1,5 @@
+const API_BASE = "https://bookshop-pos-production.up.railway.app";
+
 const shopNameEl = document.getElementById("shopName");
 const fullNameEl = document.getElementById("fullName");
 const emailEl = document.getElementById("email");
@@ -8,7 +10,6 @@ const registerBtn = document.getElementById("registerBtn");
 registerBtn.addEventListener("click", register);
 
 async function register() {
-
   const shopName = shopNameEl.value.trim();
   const fullName = fullNameEl.value.trim();
   const username = emailEl.value.trim();
@@ -20,8 +21,7 @@ async function register() {
   }
 
   try {
-
-    fetch(`${API_BASE}/register-shop`, {
+    const res = await fetch(`${API_BASE}/register-shop`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -41,7 +41,7 @@ async function register() {
       return;
     }
 
-    msg.textContent = "Shop created successfully";
+    msg.textContent = "Shop created successfully ✅";
 
     setTimeout(() => {
       window.location.href = "index.html";
