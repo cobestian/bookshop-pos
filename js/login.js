@@ -15,7 +15,7 @@ async function login() {
   }
 
   try {
-    const res = await fetch("http://localhost:3000/login", {
+    const res = await fetch("bookshop-pos-production.up.railway.app/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

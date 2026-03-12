@@ -21,7 +21,7 @@ async function register() {
 
   try {
 
-    const res = await fetch("http://localhost:3000/register-shop", {
+    const res = await fetch("bookshop-pos-production.up.railway.app/register-shop", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
