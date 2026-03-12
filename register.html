@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Register - Bookshop POS</title>
+  <div>
+    BESTIAN COMPANY LTD GH
+  </div>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="loginPage">
+  <div class="loginCard">
+    <div class="loginTitle">📚 Create Shop Account</div>
+    <div class="loginSub">Owner account + shop will be created</div>
+
+    <label class="field">
+      <span>Shop Name</span>
+      <input id="shopName" />
+    </label>
+
+    <label class="field">
+      <span>Owner Full Name</span>
+      <input id="fullName" />
+    </label>
+
+    <label class="field">
+      <span>Email (must be real email format)</span>
+      <input id="email" autocomplete="email" />
+    </label>
+
+    <label class="field">
+      <span>Password</span>
+      <input id="password" type="password" />
+    </label>
+
+    <button id="registerBtn">Register</button>
+
+    <div class="hint">
+      Already have an account? <a href="index.html">Login</a>
+    </div>
+
+    <div id="msg" class="hint"></div>
+  </div>
+
+  <script type="module" src="js/register.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>📚 BOOSKSHOP POS- Login</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1f3c88">
+
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="loginPage">
+
+  <div class="loginCard">
+    <div class="loginTitle">📚 BOOSKSHOP POS</div>
+    <div class="loginSub">Sign in to continue</div>
+
+    
+    <label class="field">
+  <input id="user" placeholder="Email" />
+<input id="pass" type="password" placeholder="Password" />
+<button id="loginBtn">Login</button>
+
+<div id="msg"></div>
+
+    
+    <div class="hint" style="margin-top:12px">
+  New shop?
+  <a href="register.html">Create an account</a>
+    </div>
+    <div style="position: fixed; bottom: 0; width: 100%; background-color: rgb(235, 239, 243); color: rgb(1, 8, 17); text-align: center; padding: 10px; font-family: serif;">
+  BESTIAN COMPANY LTD GH 0538500673
+</div>
+
+  <script type="module" src="js/login.js"></script>
+<script>
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+</script>
+  
+</body>
+</html>

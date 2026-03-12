@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📚 BOOSKSHOP POS</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1f3c88">
+
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+
+<body class="app" data-theme="light">
+  <!-- Top bar like your screenshot "ribbon feel" -->
+  <header class="topbar">
+    <div class="topLeft">
+      <button class="iconBtn" id="menuToggle">☰</button>
+      <div class="brand">
+        <div class="brandName">📚  </div>
+        <div class="brandSub" id="whoami"></div>
+        <div>BESTIAN COMPANY LTD                                  0538500673, 0503384635  </div>
+      </div>
+    </div>
+
+    <div class="topRight">
+      <label class="row">
+        <span>Theme</span>
+        <select id="themeSelect">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <button class="dangerBtn" id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <button class="navBtn" data-screen="dashboard">🏠 Dashboard</button>
+
+      <div class="navGroup">Setup</div>
+      <button class="navBtn" data-screen="products">📦 Products</button>
+      <button class="navBtn" data-screen="suppliers">🏭 Suppliers</button>
+      <button class="navBtn" data-screen="customers">👤 Customers</button>
+      <button class="navBtn" data-screen="users">👥 Manage Users</button>
+
+      <div class="navGroup">Transactions</div>
+      <button class="navBtn" data-screen="cashSales">💰 Cash Sales</button>
+      <button class="navBtn" data-screen="goodsReceived">🚚 Goods Received</button>
+      <button class="navBtn" data-screen="customerGoods">🧾 Customer Goods (Wholesale)</button>
+      <button class="navBtn" data-screen="customerPayments">💳 Customer Payments</button>
+
+      <div class="navGroup">Expenses</div>
+      <button class="navBtn" data-screen="expenseAccounts">🧾 Expense Accounts</button>
+      <button class="navBtn" data-screen="recordExpense">✍️ Record Expense</button>
+      <button class="navBtn" data-screen="expenseReport">📑 Expenses Report</button>
+
+      <div class="navGroup">Reports</div>
+      <button class="navBtn" data-screen="stockLevel">📉 Stock Level</button>
+      <button class="navBtn" data-screen="dailySalesReport">📊 Daily Sales Report</button>
+      <button class="navBtn" data-screen="goodsReceivedReport">📦 Goods Received Report</button>
+      <button class="navBtn" data-screen="endOfDay">🧮 End of Day Balancing</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <h1 class="pageTitle" id="pageTitle">📚 BOOSKSHOP POS</h1>
+      <section id="screen"></section>
+    </main>
+  </div>
+
+ 
+  <script type="module" src="js/app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+  </script>
+</body>
+</html>

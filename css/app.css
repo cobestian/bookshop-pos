@@ -1,0 +1,139 @@
+:root{
+  --bg:#f4f6f9; --card:#fff; --text:#101318; --muted:#6b7280;
+  --primary:#1f3c88; --border:#e6e8ee; --danger:#b91c1c;
+}
+[data-theme="dark"]{
+  --bg:#0f1115; --card:#151824; --text:#e9ecf1; --muted:#a9b0bd;
+  --primary:#4c7dff; --border:#23283a; --danger:#ef4444;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial, sans-serif;background:var(--bg);color:var(--text)}
+a{color:inherit}
+
+.loginPage{display:flex;align-items:center;justify-content:center;height:100vh;padding:20px}
+.loginCard{width:360px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px}
+.loginTitle{font-size:22px;font-weight:800}
+.loginSub{color:var(--muted);margin:6px 0 14px}
+.field{display:block;margin:10px 0}
+.field span{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+input,select{
+  width:100%;padding:10px;border:1px solid var(--border);border-radius:12px;
+  background:transparent;color:var(--text);outline:none;
+}
+.primaryBtn,.dangerBtn,.ghostBtn{
+  width:100%;padding:10px;border:none;border-radius:12px;cursor:pointer;
+  font-weight:700;
+}
+.primaryBtn{background:var(--primary);color:#fff}
+.dangerBtn{background:var(--danger);color:#fff}
+.ghostBtn{background:transparent;border:1px solid var(--border);color:var(--text)}
+.hint{color:var(--muted);font-size:12px;margin-top:10px}
+
+.app .topbar{
+  height:64px;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--card);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:10;
+}
+.topLeft{display:flex;align-items:center;gap:10px}
+.iconBtn{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:transparent;cursor:pointer}
+.brandName{font-weight:800}
+.brandSub{color:var(--muted);font-size:12px}
+.topRight{display:flex;gap:10px;align-items:center}
+.row{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}
+
+.layout{display:flex}
+.sidebar{
+  width:270px;min-height:calc(100vh - 64px);
+  background:var(--card);border-right:1px solid var(--border);
+  padding:12px;display:flex;flex-direction:column;gap:8px;
+}
+.navGroup{margin-top:8px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.navBtn{
+  text-align:left;padding:10px;border:1px solid var(--border);border-radius:12px;background:transparent;
+  cursor:pointer;
+}
+.navBtn:hover{border-color:var(--primary)}
+.main{flex:1;padding:14px}
+.pageTitle{margin:6px 0 14px}
+
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px;
+}
+.card .label{color:var(--muted);font-size:12px}
+.card .value{font-size:22px;font-weight:900;margin-top:6px}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px}
+.grid2{display:grid;grid-template-columns:1fr 2fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+.btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.btn{padding:10px 12px;border:none;border-radius:12px;background:var(--primary);color:#fff;font-weight:800;cursor:pointer}
+.btn2{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:transparent;color:var(--text);font-weight:800;cursor:pointer}
+
+.table{width:100%;border-collapse:collapse;margin-top:10px}
+.table th,.table td{border-bottom:1px solid var(--border);padding:10px;text-align:left}
+.table th{color:var(--muted);font-size:12px}
+
+.totalLine{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-weight:900}
+
+.lbl{ color: var(--muted); font-size:12px; margin-bottom:6px; }
+.msg{ color: var(--muted); font-size:12px; margin-top:8px; }
+.rowLine{ display:flex; gap:12px; align-items:flex-end; }
+
+.table{
+  display:block;
+  overflow-x:auto;
+  white-space:nowrap;
+}
+
+/* =========================
+   MOBILE FIXES
+========================= */
+@media (max-width: 900px) {
+  .layout {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 64px; /* adjust if your topbar height differs */
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    transform: translateX(-110%);
+    transition: transform 0.2s ease;
+    z-index: 999;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main {
+    padding: 12px;
+  }
+
+  .grid2,
+  .grid3 {
+    display: block !important;
+  }
+
+  .grid2 > *,
+  .grid3 > * {
+    margin-bottom: 12px;
+  }
+
+  /* Make tables scroll on small screens */
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+}
