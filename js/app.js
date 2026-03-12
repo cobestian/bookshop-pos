@@ -1,4 +1,4 @@
-const API_BASE = "https://bookshop-pos-production.up.railway.app";
+
 import { get, set, id, nowISO, ghc, esc } from "./db.js";
 
 /* =========================
