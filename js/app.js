@@ -2870,7 +2870,7 @@ function manageUsers() {
     }
 
     try {
-      const res = await fetch("https://bookshop-pos-production.up.railway.app/create-worker", 
+     fetch(`${API_BASE}/create-worker`, 
         {
         method: "POST",
         headers: {
@@ -2911,7 +2911,7 @@ function manageUsers() {
   if (!yes) return;
 
   try {
-    const res = await fetch(`https://bookshop-pos-production.up.railway.app/workers/${selectedId}`, {
+  fetch(`${API_BASE}/workers/${selectedId}`, {
       method: "DELETE"
     });
 
@@ -2939,8 +2939,7 @@ function manageUsers() {
 
   try {
 
-    const res = await fetch(
-      `https://bookshop-pos-production.up.railway.app/workers/${selectedId}/suspend`,
+   fetch(`${API_BASE}/workers/${selectedId}/suspend`,
       { method: "PUT" }
     );
 
@@ -2973,8 +2972,7 @@ function manageUsers() {
 
   try {
 
-    const res = await fetch(
-      `https://bookshop-pos-production.up.railway.app/workers/${selectedId}/activate`,
+  fetch(`${API_BASE}/workers/${selectedId}/activate`,
       { method: "PUT" }
     );
 
