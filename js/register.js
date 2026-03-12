@@ -46,7 +46,6 @@ async function register() {
     setTimeout(() => {
       window.location.href = "index.html";
     }, 1000);
-
   } catch (err) {
     console.error(err);
     msg.textContent = "Server error";
