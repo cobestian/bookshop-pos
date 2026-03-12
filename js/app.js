@@ -1,3 +1,4 @@
+const API_BASE = "https://bookshop-pos-production.up.railway.app";
 import { get, set, id, nowISO, ghc, esc } from "./db.js";
 
 /* =========================
@@ -2790,7 +2791,7 @@ function manageUsers() {
     const q = ($("#uFind").value || "").toLowerCase();
 
     try {
-      const res = await fetch(`https://bookshop-pos-production.up.railway.app/workers/${currentUser.shopId}`);
+      fetch(`${API_BASE}/workers/${currentUser.shopId}`)
       const all = await res.json();
 
       if (!res.ok) {
@@ -2869,7 +2870,8 @@ function manageUsers() {
     }
 
     try {
-      const res = await fetch("https://bookshop-pos-production.up.railway.app/create-worker", {
+      const res = await fetch("https://bookshop-pos-production.up.railway.app/create-worker", 
+        {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

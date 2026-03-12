@@ -1,3 +1,5 @@
+const API_BASE = "https://bookshop-pos-production.up.railway.app";
+
 const userInput = document.getElementById("user");
 const passInput = document.getElementById("pass");
 const msg = document.getElementById("msg");
@@ -15,7 +17,7 @@ async function login() {
   }
 
   try {
-    const res = await fetch("https://bookshop-pos-production.up.railway.app/login", {
+    const res = await fetch(`${API_BASE}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -31,8 +33,6 @@ async function login() {
     }
 
     localStorage.setItem("currentUser", JSON.stringify(data));
-    console.log("LOGIN SAVED currentUser =", data);
-
     window.location.href = "app.html";
   } catch (err) {
     console.error(err);
