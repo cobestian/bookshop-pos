@@ -6,19 +6,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const mysql = require("mysql2");
+
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "BIGpoloG@2004",
-  database: "bookshop_pos"
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT
 });
 
-db.connect((err) => {
+db.connect(err => {
   if (err) {
-    console.log("Database connection failed:", err);
+    console.error("Database connection failed:", err);
     return;
   }
-  console.log("Connected to MySQL");
+  console.log("Connected to Railway MySQL");
 });
 
 app.get("/", (req, res) => {
