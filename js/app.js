@@ -2790,7 +2790,7 @@ function manageUsers() {
     const q = ($("#uFind").value || "").toLowerCase();
 
     try {
-      const res = await fetch(`bookshop-pos-production.up.railway.app/workers/${currentUser.shopId}`);
+      const res = await fetch(`https://bookshop-pos-production.up.railway.app/workers/${currentUser.shopId}`);
       const all = await res.json();
 
       if (!res.ok) {
@@ -2869,7 +2869,7 @@ function manageUsers() {
     }
 
     try {
-      const res = await fetch("bookshop-pos-production.up.railway.app/create-worker", {
+      const res = await fetch("https://bookshop-pos-production.up.railway.app/create-worker", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -2909,7 +2909,7 @@ function manageUsers() {
   if (!yes) return;
 
   try {
-    const res = await fetch(`bookshop-pos-production.up.railway.app/workers/${selectedId}`, {
+    const res = await fetch(`https://bookshop-pos-production.up.railway.app/workers/${selectedId}`, {
       method: "DELETE"
     });
 
@@ -2938,7 +2938,7 @@ function manageUsers() {
   try {
 
     const res = await fetch(
-      `bookshop-pos-production.up.railway.app/workers/${selectedId}/suspend`,
+      `https://bookshop-pos-production.up.railway.app/workers/${selectedId}/suspend`,
       { method: "PUT" }
     );
 
@@ -2972,7 +2972,7 @@ function manageUsers() {
   try {
 
     const res = await fetch(
-      `bookshop-pos-production.up.railway.app/workers/${selectedId}/activate`,
+      `https://bookshop-pos-production.up.railway.app/workers/${selectedId}/activate`,
       { method: "PUT" }
     );
 
