@@ -1,12 +1,10 @@
-const express = require("express");
 const mysql = require("mysql2");
+const express = require("express");
 const cors = require("cors");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-const mysql = require("mysql2");
 
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST,
@@ -16,7 +14,7 @@ const db = mysql.createConnection({
   port: process.env.MYSQLPORT
 });
 
-db.connect(err => {
+db.connect((err) => {
   if (err) {
     console.error("Database connection failed:", err);
     return;
@@ -190,4 +188,9 @@ app.put("/workers/:id/activate", (req, res) => {
       res.json({ message: "Worker activated" });
     }
   );
+});
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+   console.log(`Server running on port ${PORT}`);
 });
