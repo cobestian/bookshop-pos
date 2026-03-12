@@ -1,3 +1,5 @@
+const API_BASE = "https://bookshop-pos-production.up.railway.app";
+
 const shopNameEl = document.getElementById("shopName");
 const fullNameEl = document.getElementById("fullName");
 const emailEl = document.getElementById("email");
