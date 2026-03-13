@@ -1,13 +1,22 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const mysql = require("mysql2");
+
+
 const app = express();
 
-// Allow requests from your specific Netlify domain
-app.use(cors({
-  origin: 'https://bookshop-pos.netlify.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
+// Manual CORS middleware - more reliable than the cors package
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "https://bookshop-pos.netlify.app");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // Handle preflight
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
 app.use(express.json());
 
 const db = mysql.createConnection({
