@@ -1,3 +1,4 @@
+
 import { get, set, id, nowISO, ghc, esc } from "./db.js";
 
 /* =========================
@@ -5,19 +6,59 @@ import { get, set, id, nowISO, ghc, esc } from "./db.js";
 ========================= */
 let screenEl = null;
 let sidebarEl = null;
-let currentUser = null;
+
+// --- Keyboard support (Enter / Esc) ---
+function setPrimaryAction(selector) {
+  // selector = the button to click when user presses Enter
+  window.__primaryActionSelector = selector;
+}
+
+document.addEventListener("keydown", (e) => {
+  // ignore if user is typing in textarea or using shift/ctrl combos
+  const tag = (e.target?.tagName || "").toLowerCase();
+  const isTypingField =
+    tag === "input" || tag === "select" || tag === "textarea";
+
+  if (e.key === "Enter") {
+    // allow normal Enter in textarea
+    if (tag === "textarea") return;
+
+    // prevent form refresh/default
+    e.preventDefault();
+
+    // click the primary button if set
+    const sel = window.__primaryActionSelector;
+    if (sel) {
+      const btn = document.querySelector(sel);
+      if (btn && !btn.disabled) btn.click();
+    }
+  }
+
+  if (e.key === "Escape") {
+    // optional: close panels or go dashboard
+    // load("dashboard");
+  }
+});
+
+// IMPORTANT: your functions use `screen.innerHTML = ...`
+let screen = null;
+
+let currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
 
 const whoami = document.getElementById("whoami");
 const themeSelect = document.getElementById("themeSelect");
 const pageTitle = document.getElementById("pageTitle");
 
-
 /* =========================
-   DOM helper (inside #screen)
+   DOM helper (always inside #screen)
 ========================= */
 function $(q) {
+  if (!screenEl) throw new Error("screenEl not ready yet");
   return screenEl.querySelector(q);
 }
+
+
 
 /* =========================
    START APP
@@ -26,32 +67,45 @@ function startApp() {
   screenEl = document.getElementById("screen");
   sidebarEl = document.getElementById("sidebar");
 
-  if (!screenEl || !sidebarEl) {
-    alert("Missing #screen or #sidebar in app.html");
+  // Make `screen` point to the same element (so your functions work)
+  screen = screenEl;
+
+  if (!screenEl) {
+    alert('Missing <section id="screen"></section> in app.html');
     return;
   }
-
-  whoami.textContent = `Logged in as: ${currentUser.fullName} (${currentUser.accessLevel})`;
-
-  document.getElementById("logoutBtn")?.addEventListener("click", async () => {
-   
+  if (!currentUser) {
     window.location.href = "index.html";
-  });
+    return;
+  }
+if (whoami) {
+  const shopLabel = currentUser.shopName ? ` - ${currentUser.shopName}` : "";
+  whoami.textContent =
+    `Logged in as: ${currentUser.fullName} (${currentUser.accessLevel})${shopLabel}`;
+}
 
+  // Logout
+  document.getElementById("logoutBtn")?.addEventListener("click", () => {
+  localStorage.removeItem("currentUser");
+  window.location.href = "index.html";
+});
+
+  // Sidebar toggle (mobile)
   document.getElementById("menuToggle")?.addEventListener("click", () => {
-    sidebarEl.classList.toggle("open");
+    sidebarEl?.classList.toggle("open");
   });
 
   // Theme
   const savedTheme = localStorage.getItem("theme") || "light";
   document.body.setAttribute("data-theme", savedTheme);
-  themeSelect.value = savedTheme;
-  themeSelect.addEventListener("change", (e) => {
+  if (themeSelect) themeSelect.value = savedTheme;
+
+  themeSelect?.addEventListener("change", (e) => {
     document.body.setAttribute("data-theme", e.target.value);
     localStorage.setItem("theme", e.target.value);
   });
 
-  // Ensure keys exist
+  // Ensure keys exist (per shop)
   function ensureKey(key, fallback) {
     if (get(key, null) === null) set(key, fallback);
   }
@@ -64,13 +118,16 @@ function startApp() {
   ensureKey("expenseAccounts", []);
   ensureKey("expenses", []);
   ensureKey("customerPayments", []);
+  ensureKey("users", []); // IMPORTANT for Manage Users screen
 
-  // Nav permissions + click handlers (ONLY ONCE)
   applyNavPermissions();
+
+  // NAV click handlers (ONLY ONE set of handlers)
   document.querySelectorAll(".navBtn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      sidebarEl.classList.remove("open");
+      sidebarEl?.classList.remove("open"); // close on mobile
       const target = btn.dataset.screen;
+
       if (!canAccess(target)) {
         alert("Access denied (role restriction).");
         return;
@@ -79,14 +136,16 @@ function startApp() {
     });
   });
 
+  // Start on dashboard
   load("dashboard");
 }
 
 /* =========================
-   PERMISSIONS
+   Permissions
 ========================= */
 function canAccess(screenName) {
   if (!currentUser) return false;
+
   if (currentUser.accessLevel === "SALESMAN") {
     if (screenName === "stockLevel") return false;
     if (screenName === "users") return false;
@@ -102,12 +161,13 @@ function applyNavPermissions() {
 }
 
 /* =========================
-   ROUTER
+   Router
 ========================= */
 function load(name) {
   switch (name) {
     case "dashboard":
       return dash();
+
     case "products":
       return productsSetup();
     case "suppliers":
@@ -116,6 +176,7 @@ function load(name) {
       return customersSetup();
     case "users":
       return manageUsers();
+
     case "cashSales":
       return cashSales();
     case "goodsReceived":
@@ -124,12 +185,14 @@ function load(name) {
       return customerGoodsWholesale();
     case "customerPayments":
       return customerPayments();
+
     case "expenseAccounts":
       return expenseAccountsSetup();
     case "recordExpense":
       return recordExpense();
     case "expenseReport":
       return expensesReport();
+
     case "stockLevel":
       return stockLevel();
     case "dailySalesReport":
@@ -138,103 +201,16 @@ function load(name) {
       return goodsReceivedReport();
     case "endOfDay":
       return endOfDay();
+
     default:
       return dash();
   }
 }
 
 /* =========================
-   SCREENS (PLACEHOLDERS FOR NOW)
-   ✅ IMPORTANT: paste your real functions below here
+   PASTE YOUR FUNCTIONS BELOW
+   (dash, productsSetup, suppliersSetup, etc)
 ========================= */
-
-function dash() {
-  pageTitle.textContent = "Dashboard";
-  screenEl.innerHTML = `<div class="panel">Dashboard loading...</div>`;
-}
-function productsSetup() {
-  pageTitle.textContent = "Products";
-  screenEl.innerHTML = `<div class="panel">Products loading...</div>`;
-  setPrimaryAction("#pSave");
-}
-function suppliersSetup() {
-  pageTitle.textContent = "Suppliers";
-  screenEl.innerHTML = `<div class="panel">Suppliers loading...</div>`;
-}
-function customersSetup() {
-  pageTitle.textContent = "Customers";
-  screenEl.innerHTML = `<div class="panel">Customers loading...</div>`;
-}
-function manageUsers() {
-  pageTitle.textContent = "Manage Users";
-  screenEl.innerHTML = `<div class="panel">Users loading...</div>`;
-}
-
-function cashSales() {
-  pageTitle.textContent = "Cash Sales";
-  screenEl.innerHTML = `<div class="panel">Cash Sales loading...</div>`;
-  setPrimaryAction("#saleAdd"); // Enter adds
-  // or if you prefer Enter saves sale:
-  // setPrimaryAction("#saleSave");
-}
-function goodsReceived() {
-  pageTitle.textContent = "Goods Received";
-  screenEl.innerHTML = `<div class="panel">Goods Received loading...</div>`;
-}
-function customerGoodsWholesale() {
-  pageTitle.textContent = "Customer Goods";
-  screenEl.innerHTML = `<div class="panel">Customer Goods loading...</div>`;
-}
-function customerPayments() {
-  pageTitle.textContent = "Customer Payments";
-  screenEl.innerHTML = `<div class="panel">Customer Payments loading...</div>`;
-}
-
-function expenseAccountsSetup() {
-  pageTitle.textContent = "Expense Accounts";
-  screenEl.innerHTML = `<div class="panel">Expense Accounts loading...</div>`;
-}
-function recordExpense() {
-  pageTitle.textContent = "Record Expense";
-  screenEl.innerHTML = `<div class="panel">Record Expense loading...</div>`;
-}
-function expensesReport() {
-  pageTitle.textContent = "Expenses Report";
-  screenEl.innerHTML = `<div class="panel">Expenses Report loading...</div>`;
-  setPrimaryAction("#erSearch");
-}
-
-function stockLevel() {
-  pageTitle.textContent = "Stock Level";
-  screenEl.innerHTML = `<div class="panel">Stock Level loading...</div>`;
-}
-function dailySalesReport() {
-  pageTitle.textContent = "Daily Sales Report";
-  screenEl.innerHTML = `<div class="panel">Daily Sales Report loading...</div>`;
-}
-function goodsReceivedReport() {
-  pageTitle.textContent = "Goods Received Report";
-  screenEl.innerHTML = `<div class="panel">Goods Received Report loading...</div>`;
-}
-function endOfDay() {
-  pageTitle.textContent = "End of Day";
-  screenEl.innerHTML = `<div class="panel">End of Day loading...</div>`;
-}
-
-function $(q) {
-  return screen.querySelector(q);
-}
-
-function placeholder(title, msg) {
-  pageTitle.textContent = title;
-  screen.innerHTML = `
-    <div class="panel">
-      <h3 style="margin-top:0">${esc(title)}</h3>
-      <div style="color:var(--muted);font-size:12px">${esc(msg)}</div>
-    </div>
-  `;
-}
-
 /* =========================
    DASHBOARD
 ========================= */
@@ -283,6 +259,7 @@ function dash() {
 ========================= */
 function productsSetup() {
   pageTitle.textContent = "Products Setup";
+  setPrimaryAction("#pSave");
 
   screen.innerHTML = `
     <div class="grid2">
@@ -824,6 +801,9 @@ function customersSetup() {
 ========================= */
 function cashSales() {
   pageTitle.textContent = "Cash Sales";
+  setPrimaryAction("#saleAdd"); // Enter adds
+  // or if you prefer Enter saves sale:
+  // setPrimaryAction("#saleSave");
 
   let cart = [];
   let selectedRow = null;
@@ -1943,6 +1923,7 @@ function recordExpense() {
   function clear() {
     $("#exRec").value = "";
     $("#exDesc").value = "";
+    $("#exAuth").value = "";
     $("#exMode").value = "Cash";
     $("#exDate").value = new Date().toISOString().slice(0, 10);
     $("#exAmt").value = "";
@@ -2722,8 +2703,6 @@ function endOfDay() {
 function manageUsers() {
   pageTitle.textContent = "Manage Users";
 
-  // Role restriction already blocks SALESMAN from opening this screen,
-  // but we’ll still guard it here too.
   if (currentUser.accessLevel === "SALESMAN") {
     alert("Access denied.");
     return load("dashboard");
@@ -2734,7 +2713,7 @@ function manageUsers() {
   screen.innerHTML = `
     <div class="grid2">
       <div class="panel">
-        <h3 style="margin-top:0">users Creating Account</h3>
+        <h3 style="margin-top:0">Users Creating Account</h3>
 
         <div class="grid3">
           <div><div class="lbl">FULL NAME</div><input id="uFull"/></div>
@@ -2759,7 +2738,7 @@ function manageUsers() {
               <option value="ADMINISTRATOR">ADMINISTRATOR</option>
               <option value="SUPERVISOR">SUPERVISOR</option>
               <option value="SALESMAN">SALESMAN</option>
-              <option value="WAREHOUSE MANAGER">WAREHOUSE MANAGER</option>
+              <option value="WAREHOUSE">WAREHOUSE</option>
               <option value="AUDITOR">AUDITOR</option>
             </select>
           </div>
@@ -2808,52 +2787,56 @@ function manageUsers() {
     $("#uRole").value = "ADMINISTRATOR";
   }
 
-  function renderList() {
-    const all = get("users", []);
+  async function renderList() {
     const q = ($("#uFind").value || "").toLowerCase();
 
-    const list = all.filter((u) => {
-      const blob =
-        `${u.fullName} ${u.username} ${u.accessLevel} ${u.staffNo} ${u.jobTitle}`.toLowerCase();
-      return blob.includes(q);
-    });
+    try {
+      fetch(`${API_BASE}/workers/${currentUser.shopId}`)
+      const all = await res.json();
 
-    tbody.innerHTML =
-      list
-        .map(
-          (u) => `
-      <tr data-id="${u.id}">
-        <td>${esc(u.fullName || "")}</td>
-        <td>${esc(u.username || "")}</td>
-        <td>${esc(u.accessLevel || "")}</td>
-        <td>${u.isSuspended ? "SUSPENDED" : "ACTIVE"}</td>
-      </tr>
-    `,
-        )
-        .join("") ||
-      `<tr><td colspan="4" style="color:var(--muted)">No users found.</td></tr>`;
+      if (!res.ok) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Could not load workers.</td></tr>`;
+        return;
+      }
 
-    tbody.querySelectorAll("tr[data-id]").forEach((tr) => {
-      tr.addEventListener("click", () => {
-        const uid = tr.dataset.id;
-        const u = all.find((x) => x.id === uid);
-        if (!u) return;
-        selectedId = uid;
-
-        $("#uFull").value = u.fullName || "";
-        $("#uJob").value = u.jobTitle || "";
-        $("#uStaff").value = u.staffNo || "";
-        $("#uuser").value = u.username || "";
-        $("#uRole").value = u.accessLevel || "SALESMAN";
-
-        // Don’t show password in fields
-        $("#uPass").value = "";
-        $("#uPass2").value = "";
-
-        $("#uMsg2").textContent =
-          "Selected ✅ (Edit fields and click SAVE to update)";
+      const list = all.filter((u) => {
+        const blob = `${u.full_name || ""} ${u.username || ""} ${u.role || ""}`.toLowerCase();
+        return blob.includes(q);
       });
-    });
+
+      tbody.innerHTML =
+        list.map((u) => `
+          <tr data-id="${u.id}">
+            <td>${esc(u.full_name || "")}</td>
+            <td>${esc(u.username || "")}</td>
+            <td>${esc(u.role || "")}</td>
+            <td>${u.is_suspended ? "SUSPENDED" : "ACTIVE"}</td>
+          </tr>
+        `).join("") ||
+        `<tr><td colspan="4" style="color:var(--muted)">No users found.</td></tr>`;
+
+      tbody.querySelectorAll("tr[data-id]").forEach((tr) => {
+        tr.addEventListener("click", () => {
+          const uid = Number(tr.dataset.id);
+          const u = all.find((x) => Number(x.id) === uid);
+          if (!u) return;
+
+          selectedId = u.id;
+          $("#uFull").value = u.full_name || "";
+          $("#uJob").value = "";
+          $("#uStaff").value = "";
+          $("#uuser").value = u.username || "";
+          $("#uRole").value = u.role || "SALESMAN";
+          $("#uPass").value = "";
+          $("#uPass2").value = "";
+
+          $("#uMsg2").textContent = "Selected ✅";
+        });
+      });
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Server error loading workers.</td></tr>`;
+    }
   }
 
   $("#uFind").addEventListener("input", renderList);
@@ -2864,128 +2847,158 @@ function manageUsers() {
     $("#uMsg2").textContent = "";
   });
 
-  $("#uSave").addEventListener("click", () => {
+  $("#uSave").addEventListener("click", async () => {
     const fullName = $("#uFull").value.trim();
-    const jobTitle = $("#uJob").value.trim();
-    const staffNo = $("#uStaff").value.trim();
     const username = $("#uuser").value.trim();
-    const role = $("#uRole").value;
-
     const pass = $("#uPass").value;
     const pass2 = $("#uPass2").value;
+    const role = $("#uRole").value;
 
-    if (!fullName || !username)
-      return ($("#uMsg").textContent = "Full name and username are required.");
-
-    let all = get("users", []);
-
-    // unique username
-    const dup = all.some(
-      (u) =>
-        (u.username || "").toLowerCase() === username.toLowerCase() &&
-        u.id !== selectedId,
-    );
-    if (dup) return ($("#uMsg").textContent = "Username already exists.");
-
-    // Creating new user requires password
-    if (!selectedId) {
-      if (!pass)
-        return ($("#uMsg").textContent = "Password is required for new user.");
-      if (pass !== pass2)
-        return ($("#uMsg").textContent = "Passwords do not match.");
-      all.push({
-        id: id(),
-        fullName,
-        jobTitle,
-        staffNo,
-        username,
-        password: pass, // simple local storage (for now)
-        accessLevel: role,
-        isSuspended: false,
-        createdAt: nowISO(),
-      });
-      set("users", all);
-      $("#uMsg").textContent = "User created ✅";
-      clearForm();
-      renderList();
+    if (!fullName || !username) {
+      $("#uMsg").textContent = "Full name and username are required.";
       return;
     }
 
-    // Updating existing user
-    all = all.map((u) => {
-      if (u.id !== selectedId) return u;
+    if (!pass) {
+      $("#uMsg").textContent = "Password is required for new user.";
+      return;
+    }
 
-      const updated = {
-        ...u,
-        fullName,
-        jobTitle,
-        staffNo,
-        username,
-        accessLevel: role,
-      };
+    if (pass !== pass2) {
+      $("#uMsg").textContent = "Passwords do not match.";
+      return;
+    }
 
-      // If password fields provided, update password
-      if (pass || pass2) {
-        if (pass !== pass2) {
-          $("#uMsg").textContent = "Passwords do not match.";
-          return u;
-        }
-        updated.password = pass;
+    try {
+     fetch(`${API_BASE}/create-worker`, 
+        {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          shopId: currentUser.shopId,
+          fullName,
+          username,
+          password: pass,
+          role
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        $("#uMsg").textContent = data.message || "Could not create worker.";
+        return;
       }
 
-      return updated;
+      $("#uMsg").textContent = "Worker created ✅";
+      clearForm();
+      renderList();
+    } catch (err) {
+      console.error(err);
+      $("#uMsg").textContent = "Server error while creating worker.";
+    }
+  });
+
+  $("#uRemove").addEventListener("click", async () => {
+  if (!selectedId) {
+    $("#uMsg2").textContent = "Select a worker first.";
+    return;
+  }
+
+  const yes = confirm("Are you sure you want to remove this worker?");
+  if (!yes) return;
+
+  try {
+  fetch(`${API_BASE}/workers/${selectedId}`, {
+      method: "DELETE"
     });
 
-    set("users", all);
-    $("#uMsg").textContent = "Updated ✅";
-    renderList();
-  });
+    const data = await res.json();
 
-  $("#uRemove").addEventListener("click", () => {
-    if (!selectedId) return ($("#uMsg2").textContent = "Select a user first.");
-    if (selectedId === currentUser.id)
-      return ($("#uMsg2").textContent = "You cannot remove your own account.");
+    if (!res.ok) {
+      $("#uMsg2").textContent = data.message || "Could not remove worker.";
+      return;
+    }
 
-    let all = get("users", []);
-    all = all.filter((u) => u.id !== selectedId);
-    set("users", all);
-
-    $("#uMsg2").textContent = "Removed ✅";
+    $("#uMsg2").textContent = "Worker removed ✅";
     clearForm();
     renderList();
-  });
+  } catch (err) {
+    console.error(err);
+    $("#uMsg2").textContent = "Server error while removing worker.";
+  }
+});
+ $("#uSuspend").addEventListener("click", async () => {
 
-  $("#uSuspend").addEventListener("click", () => {
-    if (!selectedId) return ($("#uMsg2").textContent = "Select a user first.");
-    if (selectedId === currentUser.id)
-      return ($("#uMsg2").textContent = "You cannot suspend your own account.");
+  if (!selectedId) {
+    $("#uMsg2").textContent = "Select a worker first.";
+    return;
+  }
 
-    let all = get("users", []);
-    all = all.map((u) =>
-      u.id === selectedId ? { ...u, isSuspended: true } : u,
+  try {
+
+   fetch(`${API_BASE}/workers/${selectedId}/suspend`,
+      { method: "PUT" }
     );
-    set("users", all);
 
-    $("#uMsg2").textContent = "Suspended ✅";
+    const data = await res.json();
+
+    if (!res.ok) {
+      $("#uMsg2").textContent = data.message || "Could not suspend worker.";
+      return;
+    }
+
+    $("#uMsg2").textContent = "Worker suspended ✅";
+
     renderList();
-  });
 
-  $("#uActivate").addEventListener("click", () => {
-    if (!selectedId) return ($("#uMsg2").textContent = "Select a user first.");
+  } catch (err) {
 
-    let all = get("users", []);
-    all = all.map((u) =>
-      u.id === selectedId ? { ...u, isSuspended: false } : u,
+    console.error(err);
+    $("#uMsg2").textContent = "Server error.";
+
+  }
+
+});
+
+  $("#uActivate").addEventListener("click", async () => {
+
+  if (!selectedId) {
+    $("#uMsg2").textContent = "Select a worker first.";
+    return;
+  }
+
+  try {
+
+  fetch(`${API_BASE}/workers/${selectedId}/activate`,
+      { method: "PUT" }
     );
-    set("users", all);
 
-    $("#uMsg2").textContent = "Activated ✅";
+    const data = await res.json();
+
+    if (!res.ok) {
+      $("#uMsg2").textContent = data.message || "Could not activate worker.";
+      return;
+    }
+
+    $("#uMsg2").textContent = "Worker activated ✅";
+
     renderList();
-  });
 
+  } catch (err) {
+
+    console.error(err);
+    $("#uMsg2").textContent = "Server error.";
+
+  }
+
+});
   clearForm();
   renderList();
 }
+
 function customerPayments() {
   pageTitle.textContent = "Customer Payment Account";
 
@@ -3223,3 +3236,11 @@ function customerPayments() {
 /* =========================
    Start
 ========================= */
+console.log("APP SESSION currentUser =", currentUser);
+
+if (!currentUser) {
+  alert("No currentUser found. Please login again.");
+  window.location.href = "index.html";
+} else {
+  startApp();
+}

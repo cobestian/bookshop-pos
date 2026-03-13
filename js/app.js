@@ -1,5 +1,9 @@
-
 import { get, set, id, nowISO, ghc, esc } from "./db.js";
+
+/* =========================
+   API BASE URL
+========================= */
+const API_BASE = "https://bookshop-pos-production.up.railway.app";
 
 /* =========================
    GLOBALS
@@ -9,42 +13,26 @@ let sidebarEl = null;
 
 // --- Keyboard support (Enter / Esc) ---
 function setPrimaryAction(selector) {
-  // selector = the button to click when user presses Enter
   window.__primaryActionSelector = selector;
 }
 
 document.addEventListener("keydown", (e) => {
-  // ignore if user is typing in textarea or using shift/ctrl combos
   const tag = (e.target?.tagName || "").toLowerCase();
-  const isTypingField =
-    tag === "input" || tag === "select" || tag === "textarea";
 
   if (e.key === "Enter") {
-    // allow normal Enter in textarea
     if (tag === "textarea") return;
-
-    // prevent form refresh/default
     e.preventDefault();
-
-    // click the primary button if set
     const sel = window.__primaryActionSelector;
     if (sel) {
       const btn = document.querySelector(sel);
       if (btn && !btn.disabled) btn.click();
     }
   }
-
-  if (e.key === "Escape") {
-    // optional: close panels or go dashboard
-    // load("dashboard");
-  }
 });
 
-// IMPORTANT: your functions use `screen.innerHTML = ...`
 let screen = null;
 
 let currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-
 
 const whoami = document.getElementById("whoami");
 const themeSelect = document.getElementById("themeSelect");
@@ -58,8 +46,6 @@ function $(q) {
   return screenEl.querySelector(q);
 }
 
-
-
 /* =========================
    START APP
 ========================= */
@@ -67,7 +53,6 @@ function startApp() {
   screenEl = document.getElementById("screen");
   sidebarEl = document.getElementById("sidebar");
 
-  // Make `screen` point to the same element (so your functions work)
   screen = screenEl;
 
   if (!screenEl) {
@@ -78,24 +63,22 @@ function startApp() {
     window.location.href = "index.html";
     return;
   }
-if (whoami) {
-  const shopLabel = currentUser.shopName ? ` - ${currentUser.shopName}` : "";
-  whoami.textContent =
-    `Logged in as: ${currentUser.fullName} (${currentUser.accessLevel})${shopLabel}`;
-}
 
-  // Logout
+  if (whoami) {
+    const shopLabel = currentUser.shopName ? ` - ${currentUser.shopName}` : "";
+    whoami.textContent =
+      `Logged in as: ${currentUser.fullName} (${currentUser.accessLevel})${shopLabel}`;
+  }
+
   document.getElementById("logoutBtn")?.addEventListener("click", () => {
-  localStorage.removeItem("currentUser");
-  window.location.href = "index.html";
-});
+    localStorage.removeItem("currentUser");
+    window.location.href = "index.html";
+  });
 
-  // Sidebar toggle (mobile)
   document.getElementById("menuToggle")?.addEventListener("click", () => {
     sidebarEl?.classList.toggle("open");
   });
 
-  // Theme
   const savedTheme = localStorage.getItem("theme") || "light";
   document.body.setAttribute("data-theme", savedTheme);
   if (themeSelect) themeSelect.value = savedTheme;
@@ -105,7 +88,6 @@ if (whoami) {
     localStorage.setItem("theme", e.target.value);
   });
 
-  // Ensure keys exist (per shop)
   function ensureKey(key, fallback) {
     if (get(key, null) === null) set(key, fallback);
   }
@@ -118,14 +100,13 @@ if (whoami) {
   ensureKey("expenseAccounts", []);
   ensureKey("expenses", []);
   ensureKey("customerPayments", []);
-  ensureKey("users", []); // IMPORTANT for Manage Users screen
+  ensureKey("users", []);
 
   applyNavPermissions();
 
-  // NAV click handlers (ONLY ONE set of handlers)
   document.querySelectorAll(".navBtn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      sidebarEl?.classList.remove("open"); // close on mobile
+      sidebarEl?.classList.remove("open");
       const target = btn.dataset.screen;
 
       if (!canAccess(target)) {
@@ -136,7 +117,6 @@ if (whoami) {
     });
   });
 
-  // Start on dashboard
   load("dashboard");
 }
 
@@ -167,7 +147,6 @@ function load(name) {
   switch (name) {
     case "dashboard":
       return dash();
-
     case "products":
       return productsSetup();
     case "suppliers":
@@ -176,7 +155,6 @@ function load(name) {
       return customersSetup();
     case "users":
       return manageUsers();
-
     case "cashSales":
       return cashSales();
     case "goodsReceived":
@@ -185,14 +163,12 @@ function load(name) {
       return customerGoodsWholesale();
     case "customerPayments":
       return customerPayments();
-
     case "expenseAccounts":
       return expenseAccountsSetup();
     case "recordExpense":
       return recordExpense();
     case "expenseReport":
       return expensesReport();
-
     case "stockLevel":
       return stockLevel();
     case "dailySalesReport":
@@ -201,16 +177,11 @@ function load(name) {
       return goodsReceivedReport();
     case "endOfDay":
       return endOfDay();
-
     default:
       return dash();
   }
 }
 
-/* =========================
-   PASTE YOUR FUNCTIONS BELOW
-   (dash, productsSetup, suppliersSetup, etc)
-========================= */
 /* =========================
    DASHBOARD
 ========================= */
@@ -253,9 +224,7 @@ function dash() {
 }
 
 /* =========================
-   PRODUCTS SETUP (NO CODE, table feel, left product list always)
-   Fields:
-   name, supplier, category, cost, selling, wholesale, margin, qty
+   PRODUCTS SETUP
 ========================= */
 function productsSetup() {
   pageTitle.textContent = "Products Setup";
@@ -325,7 +294,7 @@ function productsSetup() {
         <td>${Number(p.qty || 0)}</td>
         <td>${ghc(p.selling || 0)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="3" style="color:var(--muted)">No products yet.</td></tr>`;
@@ -345,7 +314,7 @@ function productsSetup() {
         $("#pWholesale").value = Number(prod.wholesale || 0).toFixed(2);
         $("#pQty").value = Number(prod.qty || 0);
         $("#pMargin").value = Number(
-          prod.margin ?? Number(prod.selling || 0) - Number(prod.cost || 0),
+          prod.margin ?? Number(prod.selling || 0) - Number(prod.cost || 0)
         ).toFixed(2);
 
         $("#pMsg").textContent = "Selected ✅";
@@ -355,16 +324,9 @@ function productsSetup() {
 
   function clearForm() {
     selectedId = null;
-    [
-      "#pName",
-      "#pSupplier",
-      "#pCategory",
-      "#pCost",
-      "#pSelling",
-      "#pWholesale",
-      "#pQty",
-      "#pMargin",
-    ].forEach((s) => ($(s).value = ""));
+    ["#pName", "#pSupplier", "#pCategory", "#pCost", "#pSelling", "#pWholesale", "#pQty", "#pMargin"].forEach(
+      (s) => ($(s).value = "")
+    );
   }
 
   $("#pFind").addEventListener("input", render);
@@ -391,42 +353,20 @@ function productsSetup() {
 
     let all = get("products", []);
     const dup = all.some(
-      (p) =>
-        (p.name || "").toLowerCase() === name.toLowerCase() &&
-        p.id !== selectedId,
+      (p) => (p.name || "").toLowerCase() === name.toLowerCase() && p.id !== selectedId
     );
     if (dup) return ($("#pMsg").textContent = "This product already exists.");
 
     if (selectedId) {
       all = all.map((p) =>
         p.id === selectedId
-          ? {
-              ...p,
-              name,
-              supplier,
-              category,
-              cost,
-              selling,
-              wholesale,
-              qty,
-              margin,
-            }
-          : p,
+          ? { ...p, name, supplier, category, cost, selling, wholesale, qty, margin }
+          : p
       );
       set("products", all);
       $("#pMsg").textContent = "Updated ✅";
     } else {
-      all.push({
-        id: id(),
-        name,
-        supplier,
-        category,
-        cost,
-        selling,
-        wholesale,
-        qty,
-        margin,
-      });
+      all.push({ id: id(), name, supplier, category, cost, selling, wholesale, qty, margin });
       set("products", all);
       $("#pMsg").textContent = "Saved ✅ Add another product.";
     }
@@ -436,14 +376,12 @@ function productsSetup() {
   });
 
   $("#pEdit").addEventListener("click", () => {
-    if (!selectedId)
-      return ($("#pMsg").textContent = "Select a product first.");
+    if (!selectedId) return ($("#pMsg").textContent = "Select a product first.");
     $("#pMsg").textContent = "Edit the fields then click SAVE ✅";
   });
 
   $("#pRemove").addEventListener("click", () => {
-    if (!selectedId)
-      return ($("#pMsg").textContent = "Select a product first.");
+    if (!selectedId) return ($("#pMsg").textContent = "Select a product first.");
     let all = get("products", []);
     all = all.filter((p) => p.id !== selectedId);
     set("products", all);
@@ -456,7 +394,7 @@ function productsSetup() {
 }
 
 /* =========================
-   SUPPLIERS SETUP (accountNo, name, location, phone, balance)
+   SUPPLIERS SETUP
 ========================= */
 function suppliersSetup() {
   pageTitle.textContent = "Suppliers Setup";
@@ -528,7 +466,7 @@ function suppliersSetup() {
     const list = all.filter(
       (s) =>
         (s.name || "").toLowerCase().includes(q) ||
-        String(s.accountNo || "").includes(q),
+        String(s.accountNo || "").includes(q)
     );
     tbody.innerHTML =
       list
@@ -539,7 +477,7 @@ function suppliersSetup() {
         <td>${esc(s.name)}</td>
         <td>${ghc(s.balance || 0)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="3" style="color:var(--muted)">No suppliers yet.</td></tr>`;
@@ -579,22 +517,16 @@ function suppliersSetup() {
     const balance = Number($("#sBal").value || 0);
 
     let all = get("suppliers", []);
-    const dupNo = all.some(
-      (x) => x.accountNo === accountNo && x.id !== selected,
-    );
+    const dupNo = all.some((x) => x.accountNo === accountNo && x.id !== selected);
     if (dupNo) return ($("#sMsg").textContent = "Account No already exists.");
     const dupName = all.some(
-      (x) =>
-        (x.name || "").toLowerCase() === name.toLowerCase() &&
-        x.id !== selected,
+      (x) => (x.name || "").toLowerCase() === name.toLowerCase() && x.id !== selected
     );
     if (dupName) return ($("#sMsg").textContent = "Supplier already exists.");
 
     if (selected) {
       all = all.map((x) =>
-        x.id === selected
-          ? { ...x, accountNo, name, phone, location, balance }
-          : x,
+        x.id === selected ? { ...x, accountNo, name, phone, location, balance } : x
       );
       set("suppliers", all);
       $("#sMsg").textContent = "Updated ✅";
@@ -628,7 +560,7 @@ function suppliersSetup() {
 }
 
 /* =========================
-   CUSTOMERS SETUP (left list, middle info, right contact)
+   CUSTOMERS SETUP
 ========================= */
 function customersSetup() {
   pageTitle.textContent = "Customers Setup";
@@ -696,9 +628,7 @@ function customersSetup() {
   function render() {
     const all = get("customers", []);
     const q = ($("#cFind").value || "").toLowerCase();
-    const list = all.filter((c) =>
-      (c.accountName || "").toLowerCase().includes(q),
-    );
+    const list = all.filter((c) => (c.accountName || "").toLowerCase().includes(q));
     tbody.innerHTML =
       list
         .map(
@@ -707,7 +637,7 @@ function customersSetup() {
         <td>${esc(c.accountName)}</td>
         <td>${ghc(c.balance || 0)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="2" style="color:var(--muted)">No customers yet.</td></tr>`;
@@ -724,7 +654,6 @@ function customersSetup() {
         $("#cOffice").value = c.officeTel || "";
         $("#cWhats").value = c.whatsapp || "";
         $("#cBal").value = Number(c.balance || 0).toFixed(2);
-
         $("#cpName").value = c.contactName || "";
         $("#cpTel").value = c.contactTel || "";
 
@@ -741,8 +670,7 @@ function customersSetup() {
 
   $("#cSave").addEventListener("click", () => {
     const accountName = $("#cName").value.trim();
-    if (!accountName)
-      return ($("#cMsg").textContent = "Account Name is required.");
+    if (!accountName) return ($("#cMsg").textContent = "Account Name is required.");
 
     const obj = {
       id: selected || id(),
@@ -758,8 +686,7 @@ function customersSetup() {
     let all = get("customers", []);
     const dup = all.some(
       (x) =>
-        (x.accountName || "").toLowerCase() === accountName.toLowerCase() &&
-        x.id !== selected,
+        (x.accountName || "").toLowerCase() === accountName.toLowerCase() && x.id !== selected
     );
     if (dup) return ($("#cMsg").textContent = "Customer already exists.");
 
@@ -797,13 +724,11 @@ function customersSetup() {
 }
 
 /* =========================
-   CASH SALES (left product list + autocomplete + cart + save to daily sales + reduce stock)
+   CASH SALES
 ========================= */
 function cashSales() {
   pageTitle.textContent = "Cash Sales";
-  setPrimaryAction("#saleAdd"); // Enter adds
-  // or if you prefer Enter saves sale:
-  // setPrimaryAction("#saleSave");
+  setPrimaryAction("#saleAdd");
 
   let cart = [];
   let selectedRow = null;
@@ -868,7 +793,7 @@ function cashSales() {
   function productByName(name) {
     const all = get("products", []);
     return all.find(
-      (p) => (p.name || "").toLowerCase() === (name || "").toLowerCase(),
+      (p) => (p.name || "").toLowerCase() === (name || "").toLowerCase()
     );
   }
 
@@ -891,7 +816,7 @@ function cashSales() {
         <td>${esc(p.name)}</td>
         <td>${Number(p.qty || 0)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="2" style="color:var(--muted)">No products.</td></tr>`;
@@ -924,7 +849,7 @@ function cashSales() {
         <td>${Number(line.qty)}</td>
         <td>${ghc(line.price * line.qty)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="5" style="color:var(--muted)">No items yet.</td></tr>`;
@@ -959,17 +884,14 @@ function cashSales() {
     const prod = productByName(prodName);
 
     if (!prod) return ($("#saleMsg").textContent = "Select a valid product.");
-    if (qty <= 0)
-      return ($("#saleMsg").textContent = "Quantity must be greater than 0.");
-    if (qty > Number(prod.qty || 0))
-      return ($("#saleMsg").textContent = "Not enough stock.");
+    if (qty <= 0) return ($("#saleMsg").textContent = "Quantity must be greater than 0.");
+    if (qty > Number(prod.qty || 0)) return ($("#saleMsg").textContent = "Not enough stock.");
 
     const existing = cart.find((x) => x.productId === prod.id);
     if (existing) {
       const newQty = existing.qty + qty;
       if (newQty > Number(prod.qty || 0))
-        return ($("#saleMsg").textContent =
-          "Not enough stock for combined qty.");
+        return ($("#saleMsg").textContent = "Not enough stock for combined qty.");
       existing.qty = newQty;
     } else {
       cart.push({
@@ -988,8 +910,7 @@ function cashSales() {
   });
 
   $("#saleRemove").addEventListener("click", () => {
-    if (!selectedRow)
-      return ($("#saleMsg").textContent = "Select a row first.");
+    if (!selectedRow) return ($("#saleMsg").textContent = "Select a row first.");
     cart = cart.filter((x) => x.rowId !== selectedRow);
     selectedRow = null;
     renderCart();
@@ -1003,10 +924,8 @@ function cashSales() {
   });
 
   $("#saleSave").addEventListener("click", () => {
-    if (cart.length === 0)
-      return ($("#saleMsg").textContent = "Nothing to save.");
+    if (cart.length === 0) return ($("#saleMsg").textContent = "Nothing to save.");
 
-    // Deduct stock
     let all = get("products", []);
     for (const line of cart) {
       const p = all.find((x) => x.id === line.productId);
@@ -1037,8 +956,7 @@ function cashSales() {
     $("#saleProd").value = "";
     $("#salePrice").value = "";
     $("#saleStock").textContent = "0";
-    $("#saleMsg").textContent =
-      "Saved ✅ Daily Sales updated. Ready for next customer.";
+    $("#saleMsg").textContent = "Saved ✅ Daily Sales updated. Ready for next customer.";
   });
 
   refreshProductDatalist();
@@ -1047,7 +965,7 @@ function cashSales() {
 }
 
 /* =========================
-   GOODS RECEIVED (as you described)
+   GOODS RECEIVED
 ========================= */
 function goodsReceived() {
   pageTitle.textContent = "Goods Received";
@@ -1057,7 +975,6 @@ function goodsReceived() {
 
   screen.innerHTML = `
     <div class="grid2">
-      <!-- Left product list always -->
       <div class="panel">
         <h3 style="margin-top:0">Product List</h3>
         <input id="grFind" placeholder="Search products..." />
@@ -1158,7 +1075,7 @@ function goodsReceived() {
   function productByName(name) {
     const all = get("products", []);
     return all.find(
-      (p) => (p.name || "").toLowerCase() === (name || "").toLowerCase(),
+      (p) => (p.name || "").toLowerCase() === (name || "").toLowerCase()
     );
   }
 
@@ -1183,12 +1100,11 @@ function goodsReceived() {
     $("#grSupplier").innerHTML = suppliers
       .map(
         (s) =>
-          `<option value="${s.id}">${esc(s.name)} (${esc(s.accountNo || "")})</option>`,
+          `<option value="${s.id}">${esc(s.name)} (${esc(s.accountNo || "")})</option>`
       )
       .join("");
     if (suppliers.length === 0) {
-      $("#grSupplier").innerHTML =
-        `<option value="">No suppliers - add suppliers first</option>`;
+      $("#grSupplier").innerHTML = `<option value="">No suppliers - add suppliers first</option>`;
     }
     loadSupplierInfo();
   }
@@ -1205,7 +1121,7 @@ function goodsReceived() {
         <td>${esc(p.name)}</td>
         <td>${Number(p.qty || 0)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="2" style="color:var(--muted)">No products.</td></tr>`;
@@ -1238,7 +1154,7 @@ function goodsReceived() {
         <td>${Number(line.qty)}</td>
         <td>${ghc(line.selling * line.qty)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="5" style="color:var(--muted)">No items yet.</td></tr>`;
@@ -1280,14 +1196,12 @@ function goodsReceived() {
     const name = $("#grProd").value.trim();
     const qty = Number($("#grQty").value || 0);
     if (!name) return ($("#grMsg").textContent = "Select a product.");
-    if (qty <= 0)
-      return ($("#grMsg").textContent = "Qty received must be > 0.");
+    if (qty <= 0) return ($("#grMsg").textContent = "Qty received must be > 0.");
 
     const cost = Number($("#grCost").value || 0);
     const selling = Number($("#grSelling").value || 0);
     const author = $("#grAuthor").value.trim();
 
-    // If product exists, we update later on SAVE (stock + prices)
     const prod = productByName(name);
     const productId = prod ? prod.id : null;
 
@@ -1326,13 +1240,11 @@ function goodsReceived() {
   });
 
   $("#grRefresh").addEventListener("click", () => {
-    // Refresh page as requested
     goodsReceived();
   });
 
   $("#grSave").addEventListener("click", () => {
-    if (cart.length === 0)
-      return ($("#grMsg").textContent = "Nothing to save.");
+    if (cart.length === 0) return ($("#grMsg").textContent = "Nothing to save.");
 
     const sid = $("#grSupplier").value;
     const suppliers = get("suppliers", []);
@@ -1342,20 +1254,16 @@ function goodsReceived() {
     const invoiceNo = $("#grInvoiceNo").value.trim();
     const invoiceDate = $("#grInvoiceDate").value || "";
 
-    // Update products stock and prices
     let products = get("products", []);
     for (const line of cart) {
       const existing = products.find(
-        (p) => (p.name || "").toLowerCase() === line.productName.toLowerCase(),
+        (p) => (p.name || "").toLowerCase() === line.productName.toLowerCase()
       );
       if (existing) {
         existing.qty = Number(existing.qty || 0) + Number(line.qty || 0);
-        // update prices from goods received entry (optional but useful)
         existing.cost = line.cost;
         existing.selling = line.selling;
-        // keep wholesale as-is (user sets in Products Setup)
       } else {
-        // create new product if it doesn't exist
         products.push({
           id: id(),
           name: line.productName,
@@ -1371,20 +1279,15 @@ function goodsReceived() {
     }
     set("products", products);
 
-    // Add to supplier balance? (you asked supplier balance exists)
-    // Goods received increases what you owe supplier (balance += total cost or selling? you used "cost value = qty * selling price" earlier in report,
-    // but logically supplier balance should use COST price. We'll track both but update balance by COST here.
     const supplierDebt = cart.reduce((s, x) => s + x.cost * x.qty, 0);
     suppliers.forEach((s) => {
-      if (s.id === supplier.id)
-        s.balance = Number(s.balance || 0) + supplierDebt;
+      if (s.id === supplier.id) s.balance = Number(s.balance || 0) + supplierDebt;
     });
     set("suppliers", suppliers);
 
-    // Save record
     const total = cart.reduce((s, x) => s + x.selling * x.qty, 0);
-    const goodsReceived = get("goodsReceived", []);
-    goodsReceived.push({
+    const goodsReceivedList = get("goodsReceived", []);
+    goodsReceivedList.push({
       id: id(),
       dateTime: nowISO(),
       supplierId: supplier.id,
@@ -1395,9 +1298,8 @@ function goodsReceived() {
       items: cart,
       total,
     });
-    set("goodsReceived", goodsReceived);
+    set("goodsReceived", goodsReceivedList);
 
-    // Clear for next
     cart = [];
     selectedRow = null;
     renderCart();
@@ -1410,8 +1312,7 @@ function goodsReceived() {
     $("#grCost").value = "";
     $("#grSelling").value = "";
     $("#grStock").value = "";
-    $("#grMsg").textContent =
-      "Saved ✅ Goods Received report updated. Ready for next.";
+    $("#grMsg").textContent = "Saved ✅ Goods Received report updated. Ready for next.";
   });
 
   refreshSupplierDropdown();
@@ -1422,11 +1323,6 @@ function goodsReceived() {
 
 /* =========================
    CUSTOMER GOODS (WHOLESALE)
-   - customer dropdown + invoice + date line
-   - left product list always
-   - use wholesale price
-   - deduct stock
-   - increase customer balance by line total
 ========================= */
 function customerGoodsWholesale() {
   pageTitle.textContent = "Customer Goods (Wholesale)";
@@ -1516,15 +1412,14 @@ function customerGoodsWholesale() {
       .map((c) => `<option value="${c.id}">${esc(c.accountName)}</option>`)
       .join("");
     if (customers.length === 0) {
-      $("#cgCustomer").innerHTML =
-        `<option value="">No customers - add customers first</option>`;
+      $("#cgCustomer").innerHTML = `<option value="">No customers - add customers first</option>`;
     }
   }
 
   function productByName(name) {
     const all = get("products", []);
     return all.find(
-      (p) => (p.name || "").toLowerCase() === (name || "").toLowerCase(),
+      (p) => (p.name || "").toLowerCase() === (name || "").toLowerCase()
     );
   }
 
@@ -1548,7 +1443,7 @@ function customerGoodsWholesale() {
         <td>${Number(p.qty || 0)}</td>
         <td>${ghc(p.wholesale || 0)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="3" style="color:var(--muted)">No products.</td></tr>`;
@@ -1579,7 +1474,7 @@ function customerGoodsWholesale() {
         <td>${ghc(line.price)}</td>
         <td>${ghc(line.price * line.qty)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="4" style="color:var(--muted)">No items yet.</td></tr>`;
@@ -1620,8 +1515,7 @@ function customerGoodsWholesale() {
 
     if (!p) return ($("#cgMsg").textContent = "Select a valid product.");
     if (qty <= 0) return ($("#cgMsg").textContent = "Qty must be > 0.");
-    if (qty > Number(p.qty || 0))
-      return ($("#cgMsg").textContent = "Not enough stock.");
+    if (qty > Number(p.qty || 0)) return ($("#cgMsg").textContent = "Not enough stock.");
 
     const price = Number(p.wholesale || 0);
 
@@ -1632,13 +1526,7 @@ function customerGoodsWholesale() {
         return ($("#cgMsg").textContent = "Not enough stock for combined qty.");
       existing.qty = newQty;
     } else {
-      cart.push({
-        rowId: id(),
-        productId: p.id,
-        productName: p.name,
-        qty,
-        price,
-      });
+      cart.push({ rowId: id(), productId: p.id, productName: p.name, qty, price });
     }
 
     $("#cgQty").value = "";
@@ -1661,14 +1549,12 @@ function customerGoodsWholesale() {
   });
 
   $("#cgSave").addEventListener("click", () => {
-    if (cart.length === 0)
-      return ($("#cgMsg").textContent = "Nothing to save.");
+    if (cart.length === 0) return ($("#cgMsg").textContent = "Nothing to save.");
     const cid = $("#cgCustomer").value;
     const customers = get("customers", []);
     const customer = customers.find((c) => c.id === cid);
     if (!customer) return ($("#cgMsg").textContent = "Select a customer.");
 
-    // deduct stock
     let products = get("products", []);
     for (const line of cart) {
       const p = products.find((x) => x.id === line.productId);
@@ -1679,14 +1565,12 @@ function customerGoodsWholesale() {
     }
     set("products", products);
 
-    // update customer balance: current balance + goods taken total
     const total = cart.reduce((s, x) => s + x.price * x.qty, 0);
     customers.forEach((c) => {
       if (c.id === customer.id) c.balance = Number(c.balance || 0) + total;
     });
     set("customers", customers);
 
-    // save record
     const records = get("customerWholesale", []);
     records.push({
       id: id(),
@@ -1712,9 +1596,7 @@ function customerGoodsWholesale() {
     $("#cgProd").value = "";
     $("#cgPrice").value = "";
     $("#cgStock").textContent = "0";
-
-    $("#cgMsg").textContent =
-      "Saved ✅ Stock updated + customer balance updated.";
+    $("#cgMsg").textContent = "Saved ✅ Stock updated + customer balance updated.";
   });
 
   refreshCustomerDropdown();
@@ -1724,7 +1606,7 @@ function customerGoodsWholesale() {
 }
 
 /* =========================
-   EXPENSE ACCOUNTS SETUP (categories)
+   EXPENSE ACCOUNTS SETUP
 ========================= */
 function expenseAccountsSetup() {
   pageTitle.textContent = "Expense Accounts";
@@ -1771,11 +1653,7 @@ function expenseAccountsSetup() {
     const list = all.filter((a) => (a.name || "").toLowerCase().includes(q));
     tbody.innerHTML =
       list
-        .map(
-          (a) => `
-      <tr data-id="${a.id}"><td>${esc(a.name)}</td></tr>
-    `,
-        )
+        .map((a) => `<tr data-id="${a.id}"><td>${esc(a.name)}</td></tr>`)
         .join("") ||
       `<tr><td style="color:var(--muted)">No expense accounts yet.</td></tr>`;
 
@@ -1807,12 +1685,9 @@ function expenseAccountsSetup() {
     const group = $("#eaGroup").value.trim() || "N/A";
     let all = get("expenseAccounts", []);
     const dup = all.some(
-      (x) =>
-        (x.name || "").toLowerCase() === name.toLowerCase() &&
-        x.id !== selectedId,
+      (x) => (x.name || "").toLowerCase() === name.toLowerCase() && x.id !== selectedId
     );
-    if (dup)
-      return ($("#eaMsg").textContent = "This expense account already exists.");
+    if (dup) return ($("#eaMsg").textContent = "This expense account already exists.");
 
     if (selectedId) {
       all = all.map((x) => (x.id === selectedId ? { ...x, name, group } : x));
@@ -1828,14 +1703,12 @@ function expenseAccountsSetup() {
   });
 
   $("#eaEdit").addEventListener("click", () => {
-    if (!selectedId)
-      return ($("#eaMsg").textContent = "Select an account first.");
+    if (!selectedId) return ($("#eaMsg").textContent = "Select an account first.");
     $("#eaMsg").textContent = "Edit then click SAVE ✅";
   });
 
   $("#eaRemove").addEventListener("click", () => {
-    if (!selectedId)
-      return ($("#eaMsg").textContent = "Select an account first.");
+    if (!selectedId) return ($("#eaMsg").textContent = "Select an account first.");
     let all = get("expenseAccounts", []);
     all = all.filter((x) => x.id !== selectedId);
     set("expenseAccounts", all);
@@ -1915,8 +1788,7 @@ function recordExpense() {
       .map((a) => `<option value="${a.id}">${esc(a.name)}</option>`)
       .join("");
     if (accounts.length === 0) {
-      $("#exAcc").innerHTML =
-        `<option value="">No expense accounts - create them first</option>`;
+      $("#exAcc").innerHTML = `<option value="">No expense accounts - create them first</option>`;
     }
   }
 
@@ -1931,9 +1803,7 @@ function recordExpense() {
 
   $("#exSave").addEventListener("click", () => {
     const accId = $("#exAcc").value;
-    if (!accId)
-      return ($("#exMsg").textContent =
-        "Create/select an expense account first.");
+    if (!accId) return ($("#exMsg").textContent = "Create/select an expense account first.");
 
     const recipient = $("#exRec").value.trim();
     const description = $("#exDesc").value.trim();
@@ -1943,10 +1813,8 @@ function recordExpense() {
     const amount = Number($("#exAmt").value || 0);
 
     if (!recipient || !description)
-      return ($("#exMsg").textContent =
-        "Recipient and description are required.");
-    if (amount <= 0)
-      return ($("#exMsg").textContent = "Amount must be greater than 0.");
+      return ($("#exMsg").textContent = "Recipient and description are required.");
+    if (amount <= 0) return ($("#exMsg").textContent = "Amount must be greater than 0.");
 
     const accounts = get("expenseAccounts", []);
     const acc = accounts.find((a) => a.id === accId);
@@ -1960,7 +1828,7 @@ function recordExpense() {
       accountName: acc ? acc.name : "",
       description,
       recipient,
-      chequeNo: "", // if you want later
+      chequeNo: "",
       enteredBy: currentUser.fullName,
       authorisedBy,
       mode,
@@ -1983,11 +1851,6 @@ function recordExpense() {
 
 /* =========================
    EXPENSES REPORT
-   - account dropdown
-   - from/to date
-   - search button loads table
-   - find filter
-   - display -> save PDF using print
 ========================= */
 function expensesReport() {
   pageTitle.textContent = "Expenses Report";
@@ -2045,9 +1908,7 @@ function expensesReport() {
     const accounts = get("expenseAccounts", []);
     $("#erAcc").innerHTML =
       `<option value="ALL">ALL</option>` +
-      accounts
-        .map((a) => `<option value="${a.id}">${esc(a.name)}</option>`)
-        .join("");
+      accounts.map((a) => `<option value="${a.id}">${esc(a.name)}</option>`).join("");
   }
 
   function inRange(dateStr, from, to) {
@@ -2081,14 +1942,13 @@ function expensesReport() {
         <td>${esc(r.mode)}</td>
         <td>${Number(r.amount || 0).toFixed(2)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="8" style="color:var(--muted)">No results.</td></tr>`;
 
     const total = filtered.reduce((s, x) => s + Number(x.amount || 0), 0);
     $("#erTotal").textContent = ghc(total);
-
     lastRows = filtered;
   }
 
@@ -2111,7 +1971,8 @@ function expensesReport() {
         <p>Date Range: ${esc($("#erFrom").value || "-")} to ${esc($("#erTo").value || "-")}</p>
         <table style="width:100%;border-collapse:collapse" border="1" cellpadding="8">
           <tr>
-            <th>Date/Time</th><th>Account</th><th>Description</th><th>Recipient</th><th>Entered By</th><th>Authorised By</th><th>Mode</th><th>Amount</th>
+            <th>Date/Time</th><th>Account</th><th>Description</th><th>Recipient</th>
+            <th>Entered By</th><th>Authorised By</th><th>Mode</th><th>Amount</th>
           </tr>
           ${lastRows
             .map(
@@ -2126,12 +1987,12 @@ function expensesReport() {
               <td>${esc(r.mode)}</td>
               <td>${Number(r.amount || 0).toFixed(2)}</td>
             </tr>
-          `,
+          `
             )
             .join("")}
         </table>
         <p style="margin-top:12px"><b>Total:</b> ${esc($("#erTotal").textContent)}</p>
-        <p style="color:#666">Tip: In the print dialog choose “Save as PDF”.</p>
+        <p style="color:#666">Tip: In the print dialog choose "Save as PDF".</p>
       </div>
     `;
     const w = window.open("", "_blank");
@@ -2151,16 +2012,14 @@ function expensesReport() {
 }
 
 /* =========================
-   STOCK LEVEL (professional, self-explanatory)
+   STOCK LEVEL
 ========================= */
 function stockLevel() {
   pageTitle.textContent = "Stock Level";
 
   const products = get("products", []);
   const lowThreshold = 5;
-  const lowCount = products.filter(
-    (p) => Number(p.qty || 0) <= lowThreshold,
-  ).length;
+  const lowCount = products.filter((p) => Number(p.qty || 0) <= lowThreshold).length;
 
   screen.innerHTML = `
     <div class="panel">
@@ -2196,20 +2055,19 @@ function stockLevel() {
       list
         .map((p) => {
           const qty = Number(p.qty || 0);
-          const danger =
-            qty <= lowThreshold ? `style="background:rgba(255,0,0,0.08)"` : "";
+          const danger = qty <= lowThreshold ? `style="background:rgba(255,0,0,0.08)"` : "";
           return `
-        <tr ${danger}>
-          <td>${esc(p.name)}</td>
-          <td>${esc(p.supplier || "-")}</td>
-          <td>${esc(p.category || "-")}</td>
-          <td>${qty}</td>
-          <td>${ghc(p.cost || 0)}</td>
-          <td>${ghc(p.selling || 0)}</td>
-          <td>${ghc(p.wholesale || 0)}</td>
-          <td>${ghc(p.margin ?? Number(p.selling || 0) - Number(p.cost || 0))}</td>
-        </tr>
-      `;
+          <tr ${danger}>
+            <td>${esc(p.name)}</td>
+            <td>${esc(p.supplier || "-")}</td>
+            <td>${esc(p.category || "-")}</td>
+            <td>${qty}</td>
+            <td>${ghc(p.cost || 0)}</td>
+            <td>${ghc(p.selling || 0)}</td>
+            <td>${ghc(p.wholesale || 0)}</td>
+            <td>${ghc(p.margin ?? Number(p.selling || 0) - Number(p.cost || 0))}</td>
+          </tr>
+        `;
         })
         .join("") ||
       `<tr><td colspan="8" style="color:var(--muted)">No products yet.</td></tr>`;
@@ -2220,10 +2078,7 @@ function stockLevel() {
 }
 
 /* =========================
-   GOODS RECEIVED REPORT (details)
-   COST VALUE = QTY RECEIVED * SELLING PRICE (as you specified)
-   Filter: supplier + date range + find invoice/product
-   Display -> PDF
+   GOODS RECEIVED REPORT
 ========================= */
 function goodsReceivedReport() {
   pageTitle.textContent = "Goods Received Report";
@@ -2280,9 +2135,7 @@ function goodsReceivedReport() {
     const suppliers = get("suppliers", []);
     $("#grrSupplier").innerHTML =
       `<option value="ALL">ALL</option>` +
-      suppliers
-        .map((s) => `<option value="${s.id}">${esc(s.name)}</option>`)
-        .join("");
+      suppliers.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join("");
   }
 
   function inRange(dateStr, from, to) {
@@ -2313,7 +2166,7 @@ function goodsReceivedReport() {
         const blob = `${item.productName} ${invoice}`.toLowerCase();
         if (q && !blob.includes(q)) continue;
 
-        const costValue = Number(item.qty || 0) * Number(item.selling || 0); // your rule
+        const costValue = Number(item.qty || 0) * Number(item.selling || 0);
         rows.push({
           dateTime: rec.dateTime,
           supplierName: rec.supplierName,
@@ -2347,7 +2200,7 @@ function goodsReceivedReport() {
         <td>${ghc(r.costValue)}</td>
         <td>${esc(r.enteredBy)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="8" style="color:var(--muted)">No results.</td></tr>`;
@@ -2366,7 +2219,8 @@ function goodsReceivedReport() {
         <p>Date Range: ${esc($("#grrFrom").value || "-")} to ${esc($("#grrTo").value || "-")}</p>
         <table style="width:100%;border-collapse:collapse" border="1" cellpadding="8">
           <tr>
-            <th>Date/Time</th><th>Supplier</th><th>Product</th><th>Invoice</th><th>Qty</th><th>Selling</th><th>Cost Value</th><th>Entered By</th>
+            <th>Date/Time</th><th>Supplier</th><th>Product</th><th>Invoice</th>
+            <th>Qty</th><th>Selling</th><th>Cost Value</th><th>Entered By</th>
           </tr>
           ${lastRows
             .map(
@@ -2381,12 +2235,12 @@ function goodsReceivedReport() {
               <td>${ghc(r.costValue)}</td>
               <td>${esc(r.enteredBy)}</td>
             </tr>
-          `,
+          `
             )
             .join("")}
         </table>
         <p style="margin-top:12px"><b>Total:</b> ${esc($("#grrTotal").textContent)}</p>
-        <p style="color:#666">Tip: In the print dialog choose “Save as PDF”.</p>
+        <p style="color:#666">Tip: In the print dialog choose "Save as PDF".</p>
       </div>
     `;
     const w = window.open("", "_blank");
@@ -2404,7 +2258,7 @@ function goodsReceivedReport() {
 }
 
 /* =========================
-   DAILY SALES REPORT (details of goods sold)
+   DAILY SALES REPORT
 ========================= */
 function dailySalesReport() {
   pageTitle.textContent = "Daily Sales Report";
@@ -2442,8 +2296,8 @@ function dailySalesReport() {
       <table class="table" id="dsTable">
         <thead>
           <tr>
-            <th>DATE & TIME</th><th>PRODUCT NAME</th><th>QTY SOLD</th><th>SELLING PRICE</th>
-            <th>TOTAL VALUE</th><th>ENTERED BY</th>
+            <th>DATE & TIME</th><th>PRODUCT NAME</th><th>QTY SOLD</th>
+            <th>SELLING PRICE</th><th>TOTAL VALUE</th><th>ENTERED BY</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -2479,7 +2333,6 @@ function dailySalesReport() {
         if (q && !blob.includes(q)) continue;
 
         const totalValue = Number(item.qty || 0) * Number(item.price || 0);
-
         rows.push({
           dateTime: s.dateTime,
           productName: item.productName,
@@ -2509,7 +2362,7 @@ function dailySalesReport() {
         <td>${ghc(r.totalValue)}</td>
         <td>${esc(r.enteredBy)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="6" style="color:var(--muted)">No results.</td></tr>`;
@@ -2541,12 +2394,12 @@ function dailySalesReport() {
               <td>${ghc(r.totalValue)}</td>
               <td>${esc(r.enteredBy)}</td>
             </tr>
-          `,
+          `
             )
             .join("")}
         </table>
         <p style="margin-top:12px"><b>Total:</b> ${esc($("#dsTotal").textContent)}</p>
-        <p style="color:#666">Tip: In the print dialog choose “Save as PDF”.</p>
+        <p style="color:#666">Tip: In the print dialog choose "Save as PDF".</p>
       </div>
     `;
     const w = window.open("", "_blank");
@@ -2563,11 +2416,7 @@ function dailySalesReport() {
 }
 
 /* =========================
-   END OF DAY BALANCING (Income and Expenses)
-   - Date range from/to
-   - left: daily goods sold amounts grouped per day
-   - right: expenses grouped by account name with totals
-   - total cash on hand = total sales - total expenses
+   END OF DAY BALANCING
 ========================= */
 function endOfDay() {
   pageTitle.textContent = "End of Day Balancing";
@@ -2633,7 +2482,6 @@ function endOfDay() {
     const from = $("#eodFrom").value || "";
     const to = $("#eodTo").value || "";
 
-    // SALES grouped by date
     const sales = get("sales", []);
     const salesByDate = {};
     for (const s of sales) {
@@ -2645,20 +2493,16 @@ function endOfDay() {
     const salesRows = Object.keys(salesByDate)
       .sort()
       .map((day) => ({ day, amount: salesByDate[day] }));
+
     $("#eodSalesTable tbody").innerHTML =
       salesRows
-        .map(
-          (r) => `
-      <tr><td>${esc(r.day)}</td><td>${ghc(r.amount)}</td></tr>
-    `,
-        )
+        .map((r) => `<tr><td>${esc(r.day)}</td><td>${ghc(r.amount)}</td></tr>`)
         .join("") ||
       `<tr><td colspan="2" style="color:var(--muted)">No sales in range.</td></tr>`;
 
     const salesTotal = salesRows.reduce((s, x) => s + Number(x.amount || 0), 0);
     $("#eodSalesTotal").textContent = ghc(salesTotal);
 
-    // EXPENSES grouped by account for range
     const expenses = get("expenses", []);
     const expByAcc = {};
     for (const e of expenses) {
@@ -2671,13 +2515,10 @@ function endOfDay() {
     const expRows = Object.keys(expByAcc)
       .sort()
       .map((k) => ({ acc: k, total: expByAcc[k] }));
+
     $("#eodExpTable tbody").innerHTML =
       expRows
-        .map(
-          (r) => `
-      <tr><td>${esc(r.acc)}</td><td>${ghc(r.total)}</td></tr>
-    `,
-        )
+        .map((r) => `<tr><td>${esc(r.acc)}</td><td>${ghc(r.total)}</td></tr>`)
         .join("") ||
       `<tr><td colspan="2" style="color:var(--muted)">No expenses in range.</td></tr>`;
 
@@ -2696,9 +2537,7 @@ function endOfDay() {
 }
 
 /* =========================
-   USER MANAGEMENT + CUSTOMER PAYMENTS
-   (If you already pasted working versions earlier, keep them.
-   For now we keep placeholders so app doesn’t break if you haven’t pasted them.)
+   MANAGE USERS
 ========================= */
 function manageUsers() {
   pageTitle.textContent = "Manage Users";
@@ -2791,7 +2630,7 @@ function manageUsers() {
     const q = ($("#uFind").value || "").toLowerCase();
 
     try {
-      fetch(`${API_BASE}/workers/${currentUser.shopId}`)
+      const res = await fetch(`${API_BASE}/workers/${currentUser.shopId}`);
       const all = await res.json();
 
       if (!res.ok) {
@@ -2805,14 +2644,18 @@ function manageUsers() {
       });
 
       tbody.innerHTML =
-        list.map((u) => `
+        list
+          .map(
+            (u) => `
           <tr data-id="${u.id}">
             <td>${esc(u.full_name || "")}</td>
             <td>${esc(u.username || "")}</td>
             <td>${esc(u.role || "")}</td>
             <td>${u.is_suspended ? "SUSPENDED" : "ACTIVE"}</td>
           </tr>
-        `).join("") ||
+        `
+          )
+          .join("") ||
         `<tr><td colspan="4" style="color:var(--muted)">No users found.</td></tr>`;
 
       tbody.querySelectorAll("tr[data-id]").forEach((tr) => {
@@ -2858,31 +2701,26 @@ function manageUsers() {
       $("#uMsg").textContent = "Full name and username are required.";
       return;
     }
-
     if (!pass) {
       $("#uMsg").textContent = "Password is required for new user.";
       return;
     }
-
     if (pass !== pass2) {
       $("#uMsg").textContent = "Passwords do not match.";
       return;
     }
 
     try {
-     fetch(`${API_BASE}/create-worker`, 
-        {
+      const res = await fetch(`${API_BASE}/create-worker`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           shopId: currentUser.shopId,
           fullName,
           username,
           password: pass,
-          role
-        })
+          role,
+        }),
       });
 
       const data = await res.json();
@@ -2902,103 +2740,94 @@ function manageUsers() {
   });
 
   $("#uRemove").addEventListener("click", async () => {
-  if (!selectedId) {
-    $("#uMsg2").textContent = "Select a worker first.";
-    return;
-  }
-
-  const yes = confirm("Are you sure you want to remove this worker?");
-  if (!yes) return;
-
-  try {
-  fetch(`${API_BASE}/workers/${selectedId}`, {
-      method: "DELETE"
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      $("#uMsg2").textContent = data.message || "Could not remove worker.";
+    if (!selectedId) {
+      $("#uMsg2").textContent = "Select a worker first.";
       return;
     }
 
-    $("#uMsg2").textContent = "Worker removed ✅";
-    clearForm();
-    renderList();
-  } catch (err) {
-    console.error(err);
-    $("#uMsg2").textContent = "Server error while removing worker.";
-  }
-});
- $("#uSuspend").addEventListener("click", async () => {
+    const yes = confirm("Are you sure you want to remove this worker?");
+    if (!yes) return;
 
-  if (!selectedId) {
-    $("#uMsg2").textContent = "Select a worker first.";
-    return;
-  }
+    try {
+      const res = await fetch(`${API_BASE}/workers/${selectedId}`, {
+        method: "DELETE",
+      });
 
-  try {
+      const data = await res.json();
 
-   fetch(`${API_BASE}/workers/${selectedId}/suspend`,
-      { method: "PUT" }
-    );
+      if (!res.ok) {
+        $("#uMsg2").textContent = data.message || "Could not remove worker.";
+        return;
+      }
 
-    const data = await res.json();
+      $("#uMsg2").textContent = "Worker removed ✅";
+      clearForm();
+      renderList();
+    } catch (err) {
+      console.error(err);
+      $("#uMsg2").textContent = "Server error while removing worker.";
+    }
+  });
 
-    if (!res.ok) {
-      $("#uMsg2").textContent = data.message || "Could not suspend worker.";
+  $("#uSuspend").addEventListener("click", async () => {
+    if (!selectedId) {
+      $("#uMsg2").textContent = "Select a worker first.";
       return;
     }
 
-    $("#uMsg2").textContent = "Worker suspended ✅";
+    try {
+      const res = await fetch(`${API_BASE}/workers/${selectedId}/suspend`, {
+        method: "PUT",
+      });
 
-    renderList();
+      const data = await res.json();
 
-  } catch (err) {
+      if (!res.ok) {
+        $("#uMsg2").textContent = data.message || "Could not suspend worker.";
+        return;
+      }
 
-    console.error(err);
-    $("#uMsg2").textContent = "Server error.";
-
-  }
-
-});
+      $("#uMsg2").textContent = "Worker suspended ✅";
+      renderList();
+    } catch (err) {
+      console.error(err);
+      $("#uMsg2").textContent = "Server error.";
+    }
+  });
 
   $("#uActivate").addEventListener("click", async () => {
-
-  if (!selectedId) {
-    $("#uMsg2").textContent = "Select a worker first.";
-    return;
-  }
-
-  try {
-
-  fetch(`${API_BASE}/workers/${selectedId}/activate`,
-      { method: "PUT" }
-    );
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      $("#uMsg2").textContent = data.message || "Could not activate worker.";
+    if (!selectedId) {
+      $("#uMsg2").textContent = "Select a worker first.";
       return;
     }
 
-    $("#uMsg2").textContent = "Worker activated ✅";
+    try {
+      const res = await fetch(`${API_BASE}/workers/${selectedId}/activate`, {
+        method: "PUT",
+      });
 
-    renderList();
+      const data = await res.json();
 
-  } catch (err) {
+      if (!res.ok) {
+        $("#uMsg2").textContent = data.message || "Could not activate worker.";
+        return;
+      }
 
-    console.error(err);
-    $("#uMsg2").textContent = "Server error.";
+      $("#uMsg2").textContent = "Worker activated ✅";
+      renderList();
+    } catch (err) {
+      console.error(err);
+      $("#uMsg2").textContent = "Server error.";
+    }
+  });
 
-  }
-
-});
   clearForm();
   renderList();
 }
 
+/* =========================
+   CUSTOMER PAYMENTS
+========================= */
 function customerPayments() {
   pageTitle.textContent = "Customer Payment Account";
 
@@ -3006,7 +2835,6 @@ function customerPayments() {
 
   screen.innerHTML = `
     <div class="grid3">
-      <!-- LEFT: Customers list -->
       <div class="panel">
         <h3 style="margin-top:0">List of Customers Account</h3>
         <input id="cpFind" placeholder="Search customer..." />
@@ -3016,7 +2844,6 @@ function customerPayments() {
         </table>
       </div>
 
-      <!-- MIDDLE: Account info -->
       <div class="panel">
         <h3 style="margin-top:0">Account Info</h3>
         <div class="panel" style="padding:12px">
@@ -3035,7 +2862,6 @@ function customerPayments() {
         </div>
       </div>
 
-      <!-- RIGHT: Payment -->
       <div class="panel">
         <h3 style="margin-top:0">Payment</h3>
 
@@ -3089,9 +2915,7 @@ function customerPayments() {
   function renderList() {
     const customers = get("customers", []);
     const q = ($("#cpFind").value || "").toLowerCase();
-    const list = customers.filter((c) =>
-      (c.accountName || "").toLowerCase().includes(q),
-    );
+    const list = customers.filter((c) => (c.accountName || "").toLowerCase().includes(q));
 
     tbody.innerHTML =
       list
@@ -3101,7 +2925,7 @@ function customerPayments() {
         <td>${esc(c.accountName)}</td>
         <td>${ghc(c.balance || 0)}</td>
       </tr>
-    `,
+    `
         )
         .join("") ||
       `<tr><td colspan="2" style="color:var(--muted)">No customers yet.</td></tr>`;
@@ -3132,7 +2956,6 @@ function customerPayments() {
     $("#cpName").textContent = c.accountName;
     $("#cpBal").textContent = ghc(bal);
     $("#cpLast").textContent = ghc(lastPay);
-
     $("#payCur").textContent = ghc(bal);
 
     const amt = Number($("#payAmt").value || 0);
@@ -3140,7 +2963,6 @@ function customerPayments() {
   }
 
   $("#cpFind").addEventListener("input", renderList);
-
   $("#payAmt").addEventListener("input", refreshAccountPanel);
 
   $("#paySave").addEventListener("click", () => {
@@ -3148,21 +2970,17 @@ function customerPayments() {
     if (!c) return ($("#payMsg").textContent = "Select a customer first.");
 
     const amount = Number($("#payAmt").value || 0);
-    if (amount <= 0)
-      return ($("#payMsg").textContent = "Amount paid must be greater than 0.");
+    if (amount <= 0) return ($("#payMsg").textContent = "Amount paid must be greater than 0.");
 
     const method = $("#payMethod").value;
 
-    // Update customer balance
     let customers = get("customers", []);
     customers = customers.map((x) => {
       if (x.id !== c.id) return x;
-      const newBal = Number(x.balance || 0) - amount;
-      return { ...x, balance: newBal };
+      return { ...x, balance: Number(x.balance || 0) - amount };
     });
     set("customers", customers);
 
-    // Save payment record
     const payments = get("customerPayments", []);
     payments.push({
       id: id(),
@@ -3206,12 +3024,12 @@ function customerPayments() {
               <td>${ghc(p.amount || 0)}</td>
               <td>${esc(p.enteredBy || "")}</td>
             </tr>
-          `,
+          `
             )
             .join("")}
         </table>
 
-        <p style="margin-top:12px;color:#666">Tip: In the print dialog choose “Save as PDF”.</p>
+        <p style="margin-top:12px;color:#666">Tip: In the print dialog choose "Save as PDF".</p>
       </div>
     `;
     const w = window.open("", "_blank");
@@ -3224,14 +3042,6 @@ function customerPayments() {
   refreshAccountPanel();
   renderList();
 }
-
-/* =========================
-   Small UI helpers (labels)
-========================= */
-(function addLabelStyles() {
-  // if your CSS already has .lbl/.msg/.rowLine you can ignore this;
-  // this will still work without breaking.
-})();
 
 /* =========================
    Start
