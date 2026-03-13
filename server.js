@@ -15,13 +15,13 @@ const db = mysql.createConnection({
   port: process.env.MYSQLPORT
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error("Database connection failed:", err);
-    return;
-  }
-  console.log("Connected to Railway MySQL");
-});
+if (err) {
+  console.log("LOGIN ERROR:", err);
+  return res.status(500).json({
+    message: "Database error",
+    error: err.message
+  });
+}
 
 app.get("/", (req, res) => {
   res.send("Bookshop POS Server Running");
