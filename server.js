@@ -30,9 +30,10 @@ const db = mysql.createConnection({
 db.connect((err) => {
   if (err) {
     console.error("Database connection failed:", err.message);
-    process.exit(1);
+    // Don't exit - let Railway show the error in logs but keep server alive
+  } else {
+    console.log("Connected to MySQL database.");
   }
-  console.log("Connected to MySQL database.");
 });
 
 app.get("/", (req, res) => {
