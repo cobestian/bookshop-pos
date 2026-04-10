@@ -17,8 +17,17 @@ async function api(method, path, body) {
 /* ---- helpers ---- */
 const ghc = (n) => "GH\u20B5 " + Number(n || 0).toFixed(2);
 const esc = (s) => String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-const today = () => new Date().toISOString().slice(0, 10);
-const nowISO = () => new Date().toISOString();
+const today = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now - offset).toISOString().slice(0, 10);
+};
+
+const nowISO = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now - offset).toISOString().slice(0, 19).replace("T", " ");
+};
 
 const getAccounts   = (sid) => JSON.parse(localStorage.getItem("expAccounts_" + sid) || "[]");
 const saveAccounts  = (sid, a) => localStorage.setItem("expAccounts_" + sid, JSON.stringify(a));
@@ -1848,7 +1857,7 @@ async function dailySalesReport() {
   function renderTable(rows) {
     var q = ($("#dsFind").value||"").toLowerCase();
     var filtered = rows.filter(function(r){ return (r.product_name||"").toLowerCase().includes(q); });
-    $("#dsTable tbody").innerHTML = filtered.map(function(r){ return "<tr><td>" + esc(r.sale_date ? new Date(r.sale_date).toLocaleString() : "-") + "</td><td>" + esc(r.product_name) + "</td><td>" + r.qty + "</td><td>" + ghc(r.price) + "</td><td>" + ghc(r.qty*r.price) + "</td><td>" + esc(r.payment_mode||"-") + "</td></tr>"; }).join("") || '<tr><td colspan="6" style="color:var(--muted)">No results.</td></tr>';
+    $("#dsTable tbody").innerHTML = filtered.map(function(r){ return "<tr><td>" + esc(r.sale_date ? new Date(r.sale_date).toLocaleString("en-GH", { timeZone: "Africa/Accra" }) : "-") + "</td><td>" + esc(r.product_name) + "</td><td>" + r.qty + "</td><td>" + ghc(r.price) + "</td><td>" + ghc(r.qty*r.price) + "</td><td>" + esc(r.payment_mode||"-") + "</td></tr>"; }).join("") || '<tr><td colspan="6" style="color:var(--muted)">No results.</td></tr>';
     $("#dsTotal").textContent = ghc(filtered.reduce(function(s,r){ return s + r.qty*r.price; }, 0));
     lastRows = filtered;
   }
