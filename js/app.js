@@ -358,7 +358,7 @@ async function productsSetup() {
         '</div>' +
         '<div style="height:10px"></div>' +
         '<div class="grid3">' +
-          '<div><div class="lbl">Qty In Stock</div><input id="pQty" type="number" step="1" ' + (currentUser.accessLevel === "SALESMAN" ? 'disabled style="opacity:0.5;cursor:not-allowed"' : '') + '/></div>'
+          '<div><div class="lbl">Qty In Stock</div><input id="pQty" type="number" step="1" ' + (currentUser.accessLevel === "SALESMAN" ? 'disabled style="opacity:0.5;cursor:not-allowed"' : '') + '/></div>' +
           '<div><div class="lbl">Profit Margin</div><input id="pMargin" type="number" step="0.01" placeholder="Auto"/></div>' +
           '<div></div>' +
         '</div>' +
@@ -412,7 +412,7 @@ async function productsSetup() {
     if (!name) return ($("#pMsg").textContent = "Product name required.");
     var cost = Number($("#pCost").value||0), selling = Number($("#pSelling").value||0);
     var margin = $("#pMargin").value.trim() === "" ? selling - cost : Number($("#pMargin").value||0);
-    var qty = (selectedId && currentUser.accessLevel === "SALESMAN") 
+     var qty = (selectedId && currentUser.accessLevel === "SALESMAN") 
   ? undefined 
   : Number($("#pQty").value||0);
 var body = { shopId: currentUser.shopId, name, supplier: $("#pSupplier").value, category: $("#pCategory").value, cost, selling, wholesale: Number($("#pWholesale").value||0), qty, margin };
