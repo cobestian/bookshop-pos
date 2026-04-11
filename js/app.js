@@ -406,16 +406,16 @@ async function productsSetup() {
 
   $("#pFind").addEventListener("input", render);
   $("#pClear").addEventListener("click", function(){ clearForm(); $("#pMsg").textContent = ""; });
-// if salesman editing existing product, lock qty
-if (selectedId && currentUser.accessLevel === "SALESMAN") {
-  body.qty = undefined; // don't update qty
-}
+
   $("#pSave").addEventListener("click", async function() {
     var name = $("#pName").value.trim();
     if (!name) return ($("#pMsg").textContent = "Product name required.");
     var cost = Number($("#pCost").value||0), selling = Number($("#pSelling").value||0);
     var margin = $("#pMargin").value.trim() === "" ? selling - cost : Number($("#pMargin").value||0);
-    var body = { shopId: currentUser.shopId, name, supplier: $("#pSupplier").value, category: $("#pCategory").value, cost, selling, wholesale: Number($("#pWholesale").value||0), qty: Number($("#pQty").value||0), margin };
+    var qty = (selectedId && currentUser.accessLevel === "SALESMAN") 
+  ? undefined 
+  : Number($("#pQty").value||0);
+var body = { shopId: currentUser.shopId, name, supplier: $("#pSupplier").value, category: $("#pCategory").value, cost, selling, wholesale: Number($("#pWholesale").value||0), qty, margin };
     try {
       if (selectedId) { await api("PUT", "/products/" + selectedId, body); $("#pMsg").textContent = "Updated \u2705"; }
       else { await api("POST", "/products", body); $("#pMsg").textContent = "Saved \u2705"; }
