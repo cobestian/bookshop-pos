@@ -358,7 +358,7 @@ async function productsSetup() {
         '</div>' +
         '<div style="height:10px"></div>' +
         '<div class="grid3">' +
-          '<div><div class="lbl">Qty In Stock</div><input id="pQty" type="number" step="1"/></div>' +
+          '<div><div class="lbl">Qty In Stock</div><input id="pQty" type="number" step="1" ' + (currentUser.accessLevel === "SALESMAN" ? 'disabled style="opacity:0.5;cursor:not-allowed"' : '') + '/></div>'
           '<div><div class="lbl">Profit Margin</div><input id="pMargin" type="number" step="0.01" placeholder="Auto"/></div>' +
           '<div></div>' +
         '</div>' +
@@ -406,7 +406,10 @@ async function productsSetup() {
 
   $("#pFind").addEventListener("input", render);
   $("#pClear").addEventListener("click", function(){ clearForm(); $("#pMsg").textContent = ""; });
-
+// if salesman editing existing product, lock qty
+if (selectedId && currentUser.accessLevel === "SALESMAN") {
+  body.qty = undefined; // don't update qty
+}
   $("#pSave").addEventListener("click", async function() {
     var name = $("#pName").value.trim();
     if (!name) return ($("#pMsg").textContent = "Product name required.");
@@ -2259,5 +2262,7 @@ if (!currentUser) {
   alert("Please login first.");
   window.location.href = "index.html";
 } else {
+  // expose load globally so onclick works
+window.load = load;
   startApp();
 }
