@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BESTIAN SHOP POS - Register</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Rajdhani', sans-serif;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .reg-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+    .reg-bg svg { width: 100%; height: 100%; }
+
+    .reg-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      height: 100vh;
+      width: 100%;
+    }
+
+    /* ---- LEFT: form ---- */
+    .reg-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 50px;
+      overflow-y: auto;
+    }
+
+    .reg-glass {
+      background: rgba(5,10,30,0.62);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(96,165,250,0.22);
+      border-radius: 20px;
+      padding: 28px 28px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 0 50px rgba(59,130,246,0.1), inset 0 0 30px rgba(255,255,255,0.02);
+    }
+
+    .reg-brand {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .reg-brand span { color: #f97316; }
+
+    .reg-tagline {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 10px;
+      color: rgba(148,163,184,0.6);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .reg-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: #e2e8f0;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    /* section divider */
+    .reg-section {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      color: rgba(249,115,22,0.7);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin: 14px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(249,115,22,0.2);
+    }
+
+    .reg-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .reg-field { margin-bottom: 0; }
+    .reg-field.full { grid-column: span 2; }
+
+    .reg-field label {
+      display: block;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(148,163,184,0.85);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .reg-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15,25,60,0.65);
+      border: 1px solid rgba(96,165,250,0.28);
+      border-radius: 8px;
+      padding: 9px 12px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .reg-input-wrap:focus-within {
+      border-color: rgba(249,115,22,0.65);
+      box-shadow: 0 0 14px rgba(249,115,22,0.15);
+    }
+    .reg-input-icon { font-size: 13px; opacity: 0.65; flex-shrink: 0; }
+    .reg-input-wrap input {
+      border: none; outline: none; background: transparent;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px; font-weight: 500; color: #e2e8f0; width: 100%;
+    }
+    .reg-input-wrap input::placeholder { color: rgba(148,163,184,0.38); }
+
+    .reg-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #ea580c, #f97316, #fb923c);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      box-shadow: 0 0 24px rgba(249,115,22,0.4);
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .reg-btn:hover { opacity: 0.9; }
+    .reg-btn:active { transform: scale(0.98); }
+
+    #msg {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      min-height: 18px;
+      letter-spacing: 0.5px;
+      color: #f87171;
+    }
+    #msg.success { color: #34d399; }
+
+    .reg-footer {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(148,163,184,0.6);
+    }
+    .reg-footer a { color: #f97316; font-weight: 600; text-decoration: none; }
+    .reg-footer a:hover { text-decoration: underline; }
+
+    /* ---- RIGHT: logo ---- */
+    .reg-right {
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+
+    .reg-logo-ring { position: relative; width: 150px; height: 150px; margin-bottom: 18px; }
+
+    .reg-logo-glow {
+      position: absolute; inset: -15px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(249,115,22,0.18) 40%, transparent 72%);
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    .reg-ring-outer {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 2px solid rgba(249,115,22,0.55);
+      animation: spin-cw 14s linear infinite;
+    }
+    .reg-ring-outer::before {
+      content: ''; position: absolute; top: -4px; left: 50%;
+      width: 8px; height: 8px; background: #f97316; border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 10px #f97316, 0 0 20px rgba(249,115,22,0.5);
+    }
+    .reg-ring-outer::after {
+      content: ''; position: absolute; bottom: -4px; left: 50%;
+      width: 5px; height: 5px; background: #f97316; border-radius: 50%;
+      transform: translateX(-50%); box-shadow: 0 0 8px #f97316; opacity: 0.6;
+    }
+
+    .reg-ring-mid {
+      position: absolute; inset: 12px; border-radius: 50%;
+      border: 1.5px solid rgba(96,165,250,0.45);
+      animation: spin-ccw 9s linear infinite;
+    }
+    .reg-ring-mid::before {
+      content: ''; position: absolute; top: -3px; left: 50%;
+      width: 6px; height: 6px; background: #60a5fa; border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 8px #60a5fa, 0 0 16px rgba(96,165,250,0.4);
+    }
+    .reg-ring-mid::after {
+      content: ''; position: absolute; right: -3px; top: 50%;
+      width: 5px; height: 5px; background: #60a5fa; border-radius: 50%;
+      transform: translateY(-50%); box-shadow: 0 0 6px #60a5fa; opacity: 0.7;
+    }
+
+    .reg-logo-inner {
+      position: absolute; inset: 24px; border-radius: 50%;
+      background: rgba(0,0,20,0.85);
+      border: 1.5px solid rgba(249,115,22,0.35);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .reg-logo-b {
+      font-family: 'Chakra Petch', sans-serif; font-size: 40px; font-weight: 700;
+      background: linear-gradient(135deg, #f97316, #fb923c 40%, #60a5fa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1;
+    }
+
+    .reg-right-title {
+      font-family: 'Chakra Petch', sans-serif; font-size: 15px; font-weight: 700;
+      color: #fff; text-align: center; letter-spacing: 3px; text-transform: uppercase;
+      text-shadow: 0 0 24px rgba(249,115,22,0.55); margin-bottom: 8px;
+    }
+    .reg-right-sub {
+      font-size: 12px; color: rgba(148,163,184,0.75); text-align: center;
+      line-height: 1.7; max-width: 200px; letter-spacing: 0.5px;
+    }
+
+    .reg-steps { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 220px; }
+    .reg-step { display: flex; align-items: center; gap: 10px; }
+    .reg-step-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(249,115,22,0.2); border: 1px solid rgba(249,115,22,0.5);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Chakra Petch', sans-serif; font-size: 11px; font-weight: 700;
+      color: #f97316; flex-shrink: 0;
+    }
+    .reg-step-text { font-size: 12px; color: rgba(148,163,184,0.8); letter-spacing: 0.3px; }
+
+    .reg-company {
+      font-family: 'Chakra Petch', sans-serif; font-size: 9px;
+      color: rgba(148,163,184,0.35); letter-spacing: 2px; text-transform: uppercase;
+      margin-top: 18px; text-align: center;
+    }
+
+    @keyframes spin-cw  { from { transform: rotate(0deg); }   to { transform: rotate(360deg); } }
+    @keyframes spin-ccw { from { transform: rotate(0deg); }   to { transform: rotate(-360deg); } }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.08); }
+    }
+
+    @media (max-width: 700px) {
+      body { overflow: auto; }
+      html, body { height: auto; min-height: 100vh; }
+      .reg-wrap { flex-direction: column; height: auto; min-height: 100vh; }
+      .reg-right { display: none; }
+      .reg-left { padding: 30px 20px; align-items: center; min-height: 100vh; }
+      .reg-glass { max-width: 100%; }
+      .reg-grid { grid-template-columns: 1fr; }
+      .reg-field.full { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BACKGROUND — same NASA Earth as login -->
+  <div class="reg-bg">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="rgspace" cx="50%" cy="50%" r="80%">
+          <stop offset="0%" stop-color="#020408"/><stop offset="100%" stop-color="#000003"/>
+        </radialGradient>
+        <radialGradient id="rgearth" cx="38%" cy="32%" r="65%">
+          <stop offset="0%"   stop-color="#4a90c4"/><stop offset="25%"  stop-color="#1a5c9a"/>
+          <stop offset="55%"  stop-color="#0d3d6e"/><stop offset="80%"  stop-color="#082d52"/>
+          <stop offset="100%" stop-color="#051e38"/>
+        </radialGradient>
+        <radialGradient id="rgcloud" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stop-color="#e8eef5" stop-opacity="0.95"/>
+          <stop offset="100%" stop-color="#c8d8e8" stop-opacity="0.6"/>
+        </radialGradient>
+        <radialGradient id="rgdarks" cx="75%" cy="58%" r="50%">
+          <stop offset="0%"   stop-color="#000820" stop-opacity="0.65"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+        <radialGradient id="rgsunlit" cx="30%" cy="28%" r="60%">
+          <stop offset="0%"   stop-color="#c8e8ff" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+        <radialGradient id="rgorglow" cx="50%" cy="50%" r="50%">
+          <stop offset="84%"  stop-color="transparent"/>
+          <stop offset="92%"  stop-color="#3b82f6" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+        <clipPath id="rgeclip"><circle cx="1050" cy="450" r="360"/></clipPath>
+        <filter id="rgblur1"><feGaussianBlur stdDeviation="4"/></filter>
+        <filter id="rgblur2"><feGaussianBlur stdDeviation="2.2"/></filter>
+        <filter id="rgblur3"><feGaussianBlur stdDeviation="1.2"/></filter>
+      </defs>
+      <rect width="1440" height="900" fill="url(#rgspace)"/>
+      <!-- stars -->
+      <circle cx="22" cy="40" r="1" fill="white" opacity="0.9"/>
+      <circle cx="110" cy="18" r="1.4" fill="white" opacity="0.7"/>
+      <circle cx="200" cy="70" r="0.9" fill="white" opacity="0.85"/>
+      <circle cx="320" cy="25" r="1.2" fill="white" opacity="0.6"/>
+      <circle cx="440" cy="90" r="1" fill="white" opacity="0.9"/>
+      <circle cx="80" cy="130" r="1.1" fill="white" opacity="0.65"/>
+      <circle cx="180" cy="170" r="0.8" fill="white" opacity="0.8"/>
+      <circle cx="50" cy="230" r="1.2" fill="white" opacity="0.6"/>
+      <circle cx="260" cy="290" r="1" fill="white" opacity="0.5"/>
+      <circle cx="140" cy="360" r="1.1" fill="white" opacity="0.7"/>
+      <circle cx="360" cy="420" r="0.9" fill="white" opacity="0.6"/>
+      <circle cx="38" cy="500" r="1.2" fill="white" opacity="0.5"/>
+      <circle cx="240" cy="570" r="1" fill="white" opacity="0.7"/>
+      <circle cx="470" cy="210" r="1.1" fill="white" opacity="0.6"/>
+      <circle cx="540" cy="340" r="0.9" fill="white" opacity="0.8"/>
+      <circle cx="600" cy="110" r="1.5" fill="white" opacity="0.7"/>
+      <circle cx="660" cy="260" r="1.1" fill="white" opacity="0.5"/>
+      <circle cx="720" cy="55" r="1" fill="white" opacity="0.8"/>
+      <circle cx="65" cy="640" r="1.1" fill="white" opacity="0.6"/>
+      <circle cx="270" cy="690" r="0.9" fill="white" opacity="0.7"/>
+      <circle cx="155" cy="750" r="1.2" fill="white" opacity="0.5"/>
+      <circle cx="390" cy="710" r="1" fill="white" opacity="0.6"/>
+      <circle cx="260" cy="120" r="2" fill="white" opacity="0.95"/>
+      <circle cx="550" cy="45" r="1.8" fill="white" opacity="0.9"/>
+      <!-- Earth -->
+      <circle cx="1050" cy="450" r="360" fill="url(#rgearth)"/>
+      <g clip-path="url(#rgeclip)">
+        <ellipse cx="1120" cy="340" rx="170" ry="130" fill="#0a4070" opacity="0.4" filter="url(#rgblur1)"/>
+        <ellipse cx="900" cy="530" rx="150" ry="120" fill="#0d4a80" opacity="0.3" filter="url(#rgblur1)"/>
+        <ellipse cx="970" cy="510" rx="90" ry="130" fill="#8b6040" opacity="0.75" filter="url(#rgblur3)" transform="rotate(-8 970 510)"/>
+        <ellipse cx="945" cy="440" rx="58" ry="75" fill="#9b6a3a" opacity="0.65" filter="url(#rgblur3)" transform="rotate(-5 945 440)"/>
+        <ellipse cx="988" cy="590" rx="50" ry="65" fill="#7a5030" opacity="0.6" filter="url(#rgblur3)"/>
+        <ellipse cx="930" cy="395" rx="65" ry="40" fill="#c8945a" opacity="0.5" filter="url(#rgblur2)" transform="rotate(-15 930 395)"/>
+        <ellipse cx="870" cy="255" rx="155" ry="90" fill="url(#rgcloud)" filter="url(#rgblur2)" transform="rotate(-20 870 255)" opacity="0.85"/>
+        <ellipse cx="830" cy="280" rx="115" ry="58" fill="url(#rgcloud)" filter="url(#rgblur3)" transform="rotate(-15 830 280)" opacity="0.9"/>
+        <ellipse cx="910" cy="232" rx="90" ry="46" fill="white" filter="url(#rgblur3)" opacity="0.7" transform="rotate(-25 910 232)"/>
+        <ellipse cx="1180" cy="362" rx="130" ry="74" fill="url(#rgcloud)" filter="url(#rgblur2)" transform="rotate(10 1180 362)" opacity="0.8"/>
+        <ellipse cx="1222" cy="336" rx="90" ry="50" fill="white" filter="url(#rgblur3)" opacity="0.75" transform="rotate(15 1222 336)"/>
+        <ellipse cx="1085" cy="640" rx="148" ry="66" fill="url(#rgcloud)" filter="url(#rgblur2)" transform="rotate(-5 1085 640)" opacity="0.75"/>
+        <ellipse cx="1085" cy="462" rx="42" ry="25" fill="#e8f4ff" opacity="0.35" filter="url(#rgblur2)" transform="rotate(20 1085 462)"/>
+        <ellipse cx="1150" cy="495" rx="115" ry="90" fill="#041828" opacity="0.35" filter="url(#rgblur1)"/>
+        <circle cx="912" cy="328" r="300" fill="url(#rgsunlit)"/>
+        <circle cx="1238" cy="462" r="265" fill="url(#rgdarks)"/>
+        <ellipse cx="1050" cy="102" rx="132" ry="42" fill="white" opacity="0.55" filter="url(#rgblur2)"/>
+        <ellipse cx="1050" cy="798" rx="148" ry="38" fill="white" opacity="0.5" filter="url(#rgblur2)"/>
+      </g>
+      <circle cx="1050" cy="450" r="360" fill="url(#rgorglow)"/>
+      <circle cx="1050" cy="450" r="368" fill="none" stroke="#4a90d9" stroke-width="6" opacity="0.3"/>
+      <circle cx="1050" cy="450" r="382" fill="none" stroke="#7ab8f5" stroke-width="3" opacity="0.13"/>
+      <circle cx="1050" cy="450" r="400" fill="none" stroke="#1d4ed8" stroke-width="28" opacity="0.05"/>
+      <!-- circuit dots -->
+      <circle cx="1050" cy="72" r="6" fill="#f97316" opacity="0.8"/>
+      <circle cx="1364" cy="258" r="5" fill="#f97316" opacity="0.6"/>
+      <circle cx="1368" cy="642" r="5" fill="#60a5fa" opacity="0.6"/>
+      <circle cx="1050" cy="828" r="6" fill="#f97316" opacity="0.7"/>
+      <circle cx="736" cy="642" r="5" fill="#60a5fa" opacity="0.5"/>
+      <circle cx="732" cy="258" r="5" fill="#f97316" opacity="0.5"/>
+      <line x1="1050" y1="72" x2="1364" y2="258" stroke="#f97316" stroke-width="0.8" opacity="0.2"/>
+      <line x1="1364" y1="258" x2="1368" y2="642" stroke="#60a5fa" stroke-width="0.8" opacity="0.18"/>
+      <line x1="1368" y1="642" x2="1050" y2="828" stroke="#f97316" stroke-width="0.8" opacity="0.2"/>
+      <line x1="1050" y1="828" x2="736" y2="642" stroke="#f97316" stroke-width="0.8" opacity="0.18"/>
+      <line x1="736" y1="642" x2="732" y2="258" stroke="#60a5fa" stroke-width="0.8" opacity="0.18"/>
+      <line x1="732" y1="258" x2="1050" y2="72" stroke="#f97316" stroke-width="0.8" opacity="0.2"/>
+    </svg>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="reg-wrap">
+
+    <!-- LEFT: form -->
+    <div class="reg-left">
+      <div class="reg-glass">
+        <div class="reg-brand">🛍 Bestian <span>Shop</span> POS</div>
+        <div class="reg-tagline">Point of Sale System</div>
+        <div class="reg-title">Create Shop Account</div>
+
+        <!-- SHOP INFO -->
+        <div class="reg-section">Shop Information</div>
+        <div class="reg-grid">
+          <div class="reg-field full">
+            <label for="shopName">Shop Name</label>
+            <div class="reg-input-wrap">
+              <span class="reg-input-icon">🏪</span>
+              <input id="shopName" type="text" placeholder="e.g. Bestian Bookshop"/>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label for="phone1">Phone Number 1</label>
+            <div class="reg-input-wrap">
+              <span class="reg-input-icon">📞</span>
+              <input id="phone1" type="tel" placeholder="e.g. 0538500673"/>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label for="phone2">Phone Number 2 (optional)</label>
+            <div class="reg-input-wrap">
+              <span class="reg-input-icon">📱</span>
+              <input id="phone2" type="tel" placeholder="e.g. 0503384635"/>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label for="branch">Branch / Location</label>
+            <div class="reg-input-wrap">
+              <span class="reg-input-icon">📍</span>
+              <input id="branch" type="text" placeholder="e.g. Accra Main Branch"/>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label for="address">Shop Address</label>
+            <div class="reg-input-wrap">
+              <span class="reg-input-icon">🗺️</span>
+              <input id="address" type="text" placeholder="e.g. Osu, Accra"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- OWNER INFO -->
+        <div class="reg-section">Owner Account</div>
+        <div class="reg-grid">
+          <div class="reg-field full">
+            <label for="fullName">Owner Full Name</label>
+            <div class="reg-input-wrap">
+              <span class="reg-input-icon">👤</span>
+              <input id="fullName" type="text" placeholder="e.g. John Mensah"/>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label for="username">Username</label>
+            <div class="reg-input-wrap">
+              <span class="reg-input-icon">🔖</span>
+              <input id="username" type="text" placeholder="Choose a username" autocomplete="username"/>
+            </div>
+          </div>
+
+          <div class="reg-field">
+            <label for="password">Password</label>
+            <div class="reg-input-wrap">
+              <span class="reg-input-icon">🔒</span>
+              <input id="password" type="password" placeholder="Choose a password" autocomplete="new-password"/>
+            </div>
+          </div>
+        </div>
+
+        <button id="registerBtn" class="reg-btn">Create Account</button>
+
+        <div id="msg"></div>
+
+        <div class="reg-footer">
+          Already have an account? <a href="index.html">Sign In</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: logo + steps -->
+    <div class="reg-right">
+      <div class="reg-logo-ring">
+        <div class="reg-logo-glow"></div>
+        <div class="reg-ring-outer"></div>
+        <div class="reg-ring-mid"></div>
+        <div class="reg-logo-inner">
+          <div class="reg-logo-b">B</div>
+        </div>
+      </div>
+
+      <div class="reg-right-title">Get Started</div>
+      <div class="reg-right-sub">Create your shop account and start managing your business today</div>
+
+      <div class="reg-steps">
+        <div class="reg-step">
+          <div class="reg-step-num">1</div>
+          <div class="reg-step-text">Fill in your shop details & contact info</div>
+        </div>
+        <div class="reg-step">
+          <div class="reg-step-num">2</div>
+          <div class="reg-step-text">Create your owner login credentials</div>
+        </div>
+        <div class="reg-step">
+          <div class="reg-step-num">3</div>
+          <div class="reg-step-text">Your account is created instantly</div>
+        </div>
+        <div class="reg-step">
+          <div class="reg-step-num">4</div>
+          <div class="reg-step-text">Login and start managing inventory</div>
+        </div>
+      </div>
+
+      <div class="reg-company">Bestian Company Ltd &nbsp;·&nbsp; 0538500673</div>
+    </div>
+
+  </div>
+
+  <script type="module" src="js/register.js"></script>
+
+  <script>
+    // colour the message automatically
+    var msgEl = document.getElementById("msg");
+    new MutationObserver(function() {
+      var t = msgEl.textContent.toLowerCase();
+      msgEl.className = (t.includes("success") || t.includes("created") || t.includes("redirect")) ? "success" : "";
+    }).observe(msgEl, { childList: true, characterData: true, subtree: true });
+  </script>
+</body>
+</html>

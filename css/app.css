@@ -1,0 +1,788 @@
+/* =============================================
+   BESTIAN SHOP POS — app.css
+   4 Themes: light | dark | warm | space
+============================================= */
+
+/* ---- FONTS ---- */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* =====================
+   THEME: LIGHT (default)
+===================== */
+:root,
+[data-theme="light"] {
+  --bg:       #f0f2f5;
+  --card:     #ffffff;
+  --text:     #1a1d2e;
+  --muted:    #6b7280;
+  --primary:  #1d4ed8;
+  --primary-light: #eff6ff;
+  --border:   #e5e7eb;
+  --danger:   #dc2626;
+  --danger-light: #fee2e2;
+  --success:  #16a34a;
+  --warn:     #d97706;
+  --nav-active-bg:  #eff6ff;
+  --nav-active-text: #1d4ed8;
+  --nav-hover-bg:   #f3f4f6;
+  --sidebar-bg:     #ffffff;
+  --topbar-bg:      #ffffff;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --font-head: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* =====================
+   THEME: DARK
+===================== */
+[data-theme="dark"] {
+  --bg:       #0f1117;
+  --card:     #161b27;
+  --text:     #e8eaf0;
+  --muted:    #9ca3af;
+  --primary:  #3b82f6;
+  --primary-light: #1e3a5f;
+  --border:   #252d3d;
+  --danger:   #ef4444;
+  --danger-light: #3b1f1f;
+  --success:  #34d399;
+  --warn:     #f59e0b;
+  --nav-active-bg:  #1e3a5f;
+  --nav-active-text: #60a5fa;
+  --nav-hover-bg:   #1f2937;
+  --sidebar-bg:     #161b27;
+  --topbar-bg:      #161b27;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --font-head: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* =====================
+   THEME: WARM
+===================== */
+[data-theme="warm"] {
+  --bg:       #faf8f5;
+  --card:     #ffffff;
+  --text:     #1c1917;
+  --muted:    #78716c;
+  --primary:  #d97706;
+  --primary-light: #fef3c7;
+  --border:   #e7e5e4;
+  --danger:   #dc2626;
+  --danger-light: #fef2f2;
+  --success:  #16a34a;
+  --warn:     #b45309;
+  --nav-active-bg:  #78350f;
+  --nav-active-text: #fef3c7;
+  --nav-hover-bg:   #f5f5f4;
+  --sidebar-bg:     #1c1917;
+  --topbar-bg:      #ffffff;
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --font-head: 'Chakra Petch', sans-serif;
+}
+
+/* Warm sidebar text needs to be light since sidebar is dark */
+[data-theme="warm"] .sidebar {
+  color: #e7e5e4;
+}
+[data-theme="warm"] .navGroup {
+  color: #57534e;
+}
+[data-theme="warm"] .navBtn {
+  color: #a8a29e;
+  border-color: #292524;
+}
+[data-theme="warm"] .navBtn:hover {
+  background: #292524;
+  color: #e7e5e4;
+}
+[data-theme="warm"] .navBtn.active {
+  background: #78350f;
+  color: #fef3c7;
+  border-color: #78350f;
+}
+
+/* =====================
+   THEME: SPACE
+===================== */
+[data-theme="space"] {
+  --bg:       #0a0a1e;
+  --card:     #0f1535;
+  --text:     #e2e8f0;
+  --muted:    #94a3b8;
+  --primary:  #f97316;
+  --primary-light: #1c1040;
+  --border:   #1e2a4a;
+  --danger:   #ef4444;
+  --danger-light: #2d1515;
+  --success:  #34d399;
+  --warn:     #f59e0b;
+  --nav-active-bg:  #1c1040;
+  --nav-active-text: #f97316;
+  --nav-hover-bg:   #131830;
+  --sidebar-bg:     #080818;
+  --topbar-bg:      #0a0a1e;
+  --font: 'Rajdhani', sans-serif;
+  --font-head: 'Chakra Petch', sans-serif;
+}
+
+[data-theme="space"] .brandName {
+  font-family: 'Chakra Petch', sans-serif;
+  letter-spacing: 2px;
+}
+
+[data-theme="space"] .pageTitle {
+  font-family: 'Chakra Petch', sans-serif;
+  letter-spacing: 2px;
+}
+
+[data-theme="space"] .btn {
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  box-shadow: 0 0 14px rgba(249,115,22,0.3);
+}
+
+/* =====================
+   RESET & BASE
+===================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font, 'Plus Jakarta Sans', sans-serif);
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+}
+
+a { color: inherit; }
+
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+/* =====================
+   TOP BAR
+===================== */
+.topbar {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.topLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.iconBtn {
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.brand {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.brandName {
+  font-weight: 700;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brandSub {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brandCompany {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topRight {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* =====================
+   LAYOUT
+===================== */
+.layout {
+  display: flex;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+}
+
+/* =====================
+   SIDEBAR — scrollable, no empty space
+===================== */
+.sidebar {
+  width: 260px;
+  height: 100%;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+
+  /* scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.navGroup {
+  margin-top: 10px;
+  margin-bottom: 2px;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.navBtn {
+  text-align: left;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navBtn:hover {
+  background: var(--nav-hover-bg);
+}
+
+.navBtn.active {
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text);
+  font-weight: 600;
+}
+
+/* =====================
+   MAIN CONTENT
+===================== */
+.main {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.main::-webkit-scrollbar { width: 5px; }
+.main::-webkit-scrollbar-track { background: transparent; }
+.main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.pageTitle {
+  margin: 0 0 14px;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-head);
+}
+
+/* =====================
+   BUTTONS
+===================== */
+.primaryBtn, .dangerBtn, .ghostBtn, .btn, .btn2 {
+  padding: 9px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.primaryBtn, .btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+}
+
+.dangerBtn {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+}
+
+.ghostBtn, .btn2 {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.primaryBtn:hover, .btn:hover { opacity: 0.88; }
+.dangerBtn:hover { opacity: 0.88; }
+.ghostBtn:hover, .btn2:hover { background: var(--nav-hover-bg); }
+.btn:active, .btn2:active { transform: scale(0.97); }
+
+.btnRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* =====================
+   FORMS
+===================== */
+input, select, textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  font-size: 13px;
+  transition: border-color 0.15s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+}
+
+.lbl {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.msg {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* =====================
+   CARDS — dashboard stat cards
+===================== */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.card .label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card .value {
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+/* =====================
+   ICON GRID — dashboard nav tiles
+===================== */
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.icon-tile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-align: center;
+}
+
+.icon-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+.icon-tile-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.icon-tile-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.icon-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  margin-top: 4px;
+}
+
+/* =====================
+   PANEL
+===================== */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+/* =====================
+   GRIDS
+===================== */
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 12px;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* =====================
+   TABLE
+===================== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.table th, .table td {
+  border-bottom: 1px solid var(--border);
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.table th {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table tr:hover td {
+  background: var(--nav-hover-bg);
+  cursor: pointer;
+}
+
+/* =====================
+   SCROLLABLE PRODUCT/TABLE PANEL
+   — stays fixed height, scrolls inside
+===================== */
+.scroll-panel {
+  overflow-y: auto;
+  max-height: 420px;
+  border-radius: 10px;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.scroll-panel::-webkit-scrollbar { width: 5px; }
+.scroll-panel::-webkit-scrollbar-track { background: transparent; }
+.scroll-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* Product list wrapper — fixed height with scroll */
+.product-list-wrap {
+  overflow-y: auto;
+  max-height: 400px;
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.product-list-wrap::-webkit-scrollbar { width: 5px; }
+.product-list-wrap::-webkit-scrollbar-track { background: transparent; }
+.product-list-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.product-list-wrap .table {
+  margin-top: 0;
+}
+
+/* table horizontal scroll for wide tables */
+.table-wrap {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.table-wrap::-webkit-scrollbar { height: 5px; }
+.table-wrap::-webkit-scrollbar-track { background: transparent; }
+.table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* =====================
+   TOTAL LINE
+===================== */
+.totalLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* =====================
+   ROW LINE
+===================== */
+.rowLine {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+/* =====================
+   LOGIN PAGE (kept for compatibility)
+===================== */
+.loginPage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+}
+
+.loginCard {
+  width: 360px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.loginTitle { font-size: 22px; font-weight: 800; }
+.loginSub { color: var(--muted); margin: 6px 0 14px; }
+.field { display: block; margin: 10px 0; }
+.hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
+
+/* =====================
+   PRINT RECEIPT CHECKBOX
+===================== */
+.print-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.print-check-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+/* =====================
+   MOBILE — responsive
+===================== */
+@media (max-width: 900px) {
+
+  body { overflow: auto; }
+
+  .layout {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* sidebar slides in from left on mobile */
+  .sidebar {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    bottom: 0;
+    width: 270px;
+    height: calc(100vh - 60px);
+    transform: translateX(-110%);
+    transition: transform 0.22s ease;
+    z-index: 999;
+    overflow-y: auto;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main {
+    height: auto;
+    overflow: visible;
+    padding: 12px;
+  }
+
+  /* stack grids on mobile */
+  .grid2,
+  .grid3 {
+    display: block !important;
+  }
+
+  .grid2 > *,
+  .grid3 > * {
+    margin-bottom: 12px;
+  }
+
+  /* dashboard cards - 2 per row on mobile */
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* icon grid - 3 per row on mobile */
+  .icon-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* topbar brand - compact on mobile */
+  .brandCompany {
+    display: none;
+  }
+
+  .brandName {
+    font-size: 13px;
+  }
+
+  /* product list scroll height smaller on mobile */
+  .product-list-wrap {
+    max-height: 280px;
+  }
+
+  .scroll-panel {
+    max-height: 300px;
+  }
+
+  /* table horizontal scroll */
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .topbar {
+    height: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .icon-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .topRight .row {
+    display: none;
+  }
+}

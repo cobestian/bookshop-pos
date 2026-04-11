@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BESTIAN SHOP POS</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1f3c88">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+
+<body class="app" data-theme="light">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topLeft">
+      <button class="iconBtn" id="menuToggle">☰</button>
+      <div class="brand">
+        <div class="brandName">🛍 BESTIAN SHOP POS</div>
+        <div class="brandSub" id="whoami"></div>
+        <div class="brandCompany">BESTIAN COMPANY LTD &nbsp;·&nbsp; 0538500673, 0503384635</div>
+      </div>
+    </div>
+    <div class="topRight">
+      <label class="row">
+        <span>Theme</span>
+        <select id="themeSelect">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="warm">Warm</option>
+          <option value="space">Space</option>
+        </select>
+      </label>
+      <button class="dangerBtn" id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+      <button class="navBtn active" data-screen="dashboard">🏠 Dashboard</button>
+
+      <div class="navGroup">Setup</div>
+      <button class="navBtn" data-screen="products">📦 Products</button>
+      <button class="navBtn" data-screen="suppliers">🏭 Suppliers</button>
+      <button class="navBtn" data-screen="customers">👤 Customers</button>
+      <button class="navBtn" data-screen="categories">🏷️ Categories</button>
+      <button class="navBtn" data-screen="users">👥 Manage Users</button>
+      <button class="navBtn" data-screen="shopSettings">⚙️ Shop Settings</button>
+
+      <div class="navGroup">Transactions</div>
+      <button class="navBtn" data-screen="cashSales">💰 Cash Sales</button>
+      <button class="navBtn" data-screen="goodsReceived">🚚 Goods Received</button>
+      <button class="navBtn" data-screen="customerGoods">🧾 Customer Goods (Wholesale)</button>
+      <button class="navBtn" data-screen="customerPayments">💳 Customer Payments</button>
+      <button class="navBtn" data-screen="momoAccount">📱 MoMo Account</button>
+      <button class="navBtn" data-screen="adjustment">🔄 Adjustment</button>
+
+      <div class="navGroup">Expenses</div>
+      <button class="navBtn" data-screen="expenseAccounts">🧾 Expense Accounts</button>
+      <button class="navBtn" data-screen="recordExpense">✍️ Record Expense</button>
+      <button class="navBtn" data-screen="expenseReport">📑 Expenses Report</button>
+
+      <div class="navGroup">Reports</div>
+      <button class="navBtn" data-screen="stockLevel">📉 Stock Level</button>
+      <button class="navBtn" data-screen="dailyStockLevel">📋 Daily Stock Level</button>
+      <button class="navBtn" data-screen="dailySalesReport">📊 Daily Sales Report</button>
+      <button class="navBtn" data-screen="wholesaleReport">🧾 Wholesale Report</button>
+      <button class="navBtn" data-screen="goodsReceivedReport">📦 Goods Received Report</button>
+      <button class="navBtn" data-screen="adjustmentReport">🔄 Adjustment Report</button>
+      <button class="navBtn" data-screen="endOfDay">🧮 End of Day Balancing</button>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <h1 class="pageTitle" id="pageTitle">Dashboard</h1>
+      <section id="screen"></section>
+    </main>
+
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+  </script>
+</body>
+</html>

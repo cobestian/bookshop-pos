@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BESTIAN SHOP POS - Login</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0a2e">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Chakra+Petch:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Rajdhani', sans-serif;
+      background: #000;
+      overflow: hidden;
+    }
+
+    /* =====================
+       BACKGROUND - SPACE + EARTH
+    ===================== */
+    .login-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .login-bg svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* =====================
+       MAIN LAYOUT
+    ===================== */
+    .login-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      height: 100vh;
+      width: 100%;
+    }
+
+    /* =====================
+       LEFT - FORM SIDE
+    ===================== */
+    .login-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 60px;
+    }
+
+    .login-glass {
+      background: rgba(5, 10, 30, 0.62);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(96, 165, 250, 0.22);
+      border-radius: 20px;
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 0 50px rgba(59, 130, 246, 0.1), inset 0 0 30px rgba(255,255,255,0.02);
+    }
+
+    .login-brand {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .login-brand span { color: #f97316; }
+
+    .login-tagline {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 10px;
+      color: rgba(148, 163, 184, 0.7);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .login-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #e2e8f0;
+      letter-spacing: 2px;
+      margin-bottom: 22px;
+    }
+
+    .login-field {
+      margin-bottom: 14px;
+    }
+
+    .login-field label {
+      display: block;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(148, 163, 184, 0.85);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .login-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 25, 60, 0.65);
+      border: 1px solid rgba(96, 165, 250, 0.28);
+      border-radius: 8px;
+      padding: 11px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .login-input-wrap:focus-within {
+      border-color: rgba(249, 115, 22, 0.65);
+      box-shadow: 0 0 14px rgba(249, 115, 22, 0.15);
+    }
+
+    .login-input-icon {
+      font-size: 15px;
+      opacity: 0.65;
+      flex-shrink: 0;
+    }
+
+    .login-input-wrap input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: #e2e8f0;
+      width: 100%;
+    }
+
+    .login-input-wrap input::placeholder {
+      color: rgba(148, 163, 184, 0.38);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #ea580c, #f97316, #fb923c);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      box-shadow: 0 0 24px rgba(249, 115, 22, 0.4);
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:active { transform: scale(0.98); }
+
+    #msg {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #f87171;
+      text-align: center;
+      min-height: 18px;
+      letter-spacing: 0.5px;
+    }
+
+    .login-footer {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(148, 163, 184, 0.6);
+      letter-spacing: 0.5px;
+    }
+
+    .login-footer a {
+      color: #f97316;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .login-footer a:hover { text-decoration: underline; }
+
+    /* =====================
+       RIGHT - LOGO SIDE
+    ===================== */
+    .login-right {
+      width: 44%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      gap: 0;
+    }
+
+    /* Animated logo ring */
+    .logo-ring-wrap {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin-bottom: 18px;
+    }
+
+    .logo-glow {
+      position: absolute;
+      inset: -15px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(249,115,22,0.18) 40%, transparent 72%);
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    .logo-ring-outer {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(249, 115, 22, 0.55);
+      animation: spin-cw 14s linear infinite;
+    }
+
+    .logo-ring-outer::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      background: #f97316;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 10px #f97316, 0 0 20px rgba(249,115,22,0.5);
+    }
+
+    .logo-ring-outer::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: #f97316;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 8px #f97316;
+      opacity: 0.6;
+    }
+
+    .logo-ring-mid {
+      position: absolute;
+      inset: 12px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(96, 165, 250, 0.45);
+      animation: spin-ccw 9s linear infinite;
+    }
+
+    .logo-ring-mid::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: 50%;
+      width: 6px;
+      height: 6px;
+      background: #60a5fa;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 8px #60a5fa, 0 0 16px rgba(96,165,250,0.4);
+    }
+
+    .logo-ring-mid::after {
+      content: '';
+      position: absolute;
+      right: -3px;
+      top: 50%;
+      width: 5px;
+      height: 5px;
+      background: #60a5fa;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      box-shadow: 0 0 6px #60a5fa;
+      opacity: 0.7;
+    }
+
+    .logo-inner {
+      position: absolute;
+      inset: 24px;
+      border-radius: 50%;
+      background: rgba(0, 0, 20, 0.85);
+      border: 1.5px solid rgba(249, 115, 22, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .logo-b {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 44px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f97316, #fb923c 40%, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    /* circuit lines from ring -->
+    .logo-circuit {
+      position: absolute;
+      inset: -30px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .right-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-shadow: 0 0 24px rgba(249, 115, 22, 0.55);
+      margin-bottom: 8px;
+    }
+
+    .right-sub {
+      font-size: 13px;
+      color: rgba(148, 163, 184, 0.75);
+      text-align: center;
+      line-height: 1.7;
+      max-width: 200px;
+      letter-spacing: 0.5px;
+    }
+
+    .right-pills {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .right-pill {
+      background: rgba(249, 115, 22, 0.14);
+      border: 1px solid rgba(249, 115, 22, 0.38);
+      border-radius: 20px;
+      padding: 5px 13px;
+      font-size: 11px;
+      color: #fb923c;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      font-family: 'Chakra Petch', sans-serif;
+    }
+
+    .right-company {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 9px;
+      color: rgba(148, 163, 184, 0.35);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 18px;
+      text-align: center;
+    }
+
+    /* =====================
+       ANIMATIONS
+    ===================== */
+    @keyframes spin-cw  { from { transform: rotate(0deg); }   to { transform: rotate(360deg); } }
+    @keyframes spin-ccw { from { transform: rotate(0deg); }   to { transform: rotate(-360deg); } }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.08); }
+    }
+
+    /* =====================
+       MOBILE
+    ===================== */
+    @media (max-width: 700px) {
+      body { overflow: auto; }
+      html, body { height: auto; min-height: 100vh; }
+      .login-wrap { flex-direction: column; height: auto; min-height: 100vh; }
+      .login-right { display: none; }
+      .login-left { padding: 40px 24px; align-items: center; min-height: 100vh; }
+      .login-glass { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== BACKGROUND ===================== -->
+  <div class="login-bg">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="lgspace" cx="50%" cy="50%" r="80%">
+          <stop offset="0%" stop-color="#020408"/>
+          <stop offset="100%" stop-color="#000003"/>
+        </radialGradient>
+        <radialGradient id="lgearth" cx="38%" cy="32%" r="65%">
+          <stop offset="0%"   stop-color="#4a90c4"/>
+          <stop offset="25%"  stop-color="#1a5c9a"/>
+          <stop offset="55%"  stop-color="#0d3d6e"/>
+          <stop offset="80%"  stop-color="#082d52"/>
+          <stop offset="100%" stop-color="#051e38"/>
+        </radialGradient>
+        <radialGradient id="lgcloud" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stop-color="#e8eef5" stop-opacity="0.95"/>
+          <stop offset="100%" stop-color="#c8d8e8" stop-opacity="0.6"/>
+        </radialGradient>
+        <radialGradient id="lgatmos" cx="50%" cy="50%" r="50%">
+          <stop offset="82%"  stop-color="transparent"/>
+          <stop offset="91%"  stop-color="#4a90d9" stop-opacity="0.45"/>
+          <stop offset="97%"  stop-color="#7ab8f5" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+        <radialGradient id="lgdarks" cx="75%" cy="58%" r="50%">
+          <stop offset="0%"   stop-color="#000820" stop-opacity="0.65"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+        <radialGradient id="lgsunlit" cx="30%" cy="28%" r="60%">
+          <stop offset="0%"   stop-color="#c8e8ff" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+        <radialGradient id="lgorglow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stop-color="transparent"/>
+          <stop offset="84%"  stop-color="transparent"/>
+          <stop offset="92%"  stop-color="#3b82f6" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+        <clipPath id="lgeclip"><circle cx="1050" cy="450" r="360"/></clipPath>
+        <filter id="lgblur1"><feGaussianBlur stdDeviation="4"/></filter>
+        <filter id="lgblur2"><feGaussianBlur stdDeviation="2.2"/></filter>
+        <filter id="lgblur3"><feGaussianBlur stdDeviation="1.2"/></filter>
+      </defs>
+
+      <!-- deep space -->
+      <rect width="1440" height="900" fill="url(#lgspace)"/>
+
+      <!-- stars -->
+      <circle cx="22"  cy="40"  r="1"   fill="white" opacity="0.9"/>
+      <circle cx="110" cy="18"  r="1.4" fill="white" opacity="0.7"/>
+      <circle cx="200" cy="70"  r="0.9" fill="white" opacity="0.85"/>
+      <circle cx="320" cy="25"  r="1.2" fill="white" opacity="0.6"/>
+      <circle cx="440" cy="90"  r="1"   fill="white" opacity="0.9"/>
+      <circle cx="80"  cy="130" r="1.1" fill="white" opacity="0.65"/>
+      <circle cx="180" cy="170" r="0.8" fill="white" opacity="0.8"/>
+      <circle cx="50"  cy="230" r="1.2" fill="white" opacity="0.6"/>
+      <circle cx="260" cy="290" r="1"   fill="white" opacity="0.5"/>
+      <circle cx="140" cy="360" r="1.1" fill="white" opacity="0.7"/>
+      <circle cx="360" cy="420" r="0.9" fill="white" opacity="0.6"/>
+      <circle cx="38"  cy="500" r="1.2" fill="white" opacity="0.5"/>
+      <circle cx="240" cy="570" r="1"   fill="white" opacity="0.7"/>
+      <circle cx="470" cy="210" r="1.1" fill="white" opacity="0.6"/>
+      <circle cx="540" cy="340" r="0.9" fill="white" opacity="0.8"/>
+      <circle cx="600" cy="110" r="1.5" fill="white" opacity="0.7"/>
+      <circle cx="660" cy="260" r="1.1" fill="white" opacity="0.5"/>
+      <circle cx="720" cy="55"  r="1"   fill="white" opacity="0.8"/>
+      <circle cx="65"  cy="640" r="1.1" fill="white" opacity="0.6"/>
+      <circle cx="270" cy="690" r="0.9" fill="white" opacity="0.7"/>
+      <circle cx="155" cy="750" r="1.2" fill="white" opacity="0.5"/>
+      <circle cx="390" cy="710" r="1"   fill="white" opacity="0.6"/>
+      <circle cx="490" cy="780" r="1.1" fill="white" opacity="0.7"/>
+      <circle cx="580" cy="730" r="0.9" fill="white" opacity="0.8"/>
+      <circle cx="640" cy="820" r="1.3" fill="white" opacity="0.6"/>
+      <circle cx="700" cy="760" r="1"   fill="white" opacity="0.5"/>
+      <!-- bright stars -->
+      <circle cx="260" cy="120" r="2"   fill="white" opacity="0.95"/>
+      <circle cx="550" cy="45"  r="1.8" fill="white" opacity="0.9"/>
+      <circle cx="120" cy="450" r="1.7" fill="white" opacity="0.85"/>
+
+      <!-- Earth -->
+      <circle cx="1050" cy="450" r="360" fill="url(#lgearth)"/>
+      <g clip-path="url(#lgeclip)">
+        <!-- ocean depth -->
+        <ellipse cx="1120" cy="340" rx="170" ry="130" fill="#0a4070" opacity="0.4" filter="url(#lgblur1)"/>
+        <ellipse cx="900"  cy="530" rx="150" ry="120" fill="#0d4a80" opacity="0.3" filter="url(#lgblur1)"/>
+        <!-- Africa -->
+        <ellipse cx="970"  cy="510" rx="90"  ry="130" fill="#8b6040" opacity="0.75" filter="url(#lgblur3)" transform="rotate(-8 970 510)"/>
+        <ellipse cx="945"  cy="440" rx="58"  ry="75"  fill="#9b6a3a" opacity="0.65" filter="url(#lgblur3)" transform="rotate(-5 945 440)"/>
+        <ellipse cx="988"  cy="590" rx="50"  ry="65"  fill="#7a5030" opacity="0.6"  filter="url(#lgblur3)"/>
+        <ellipse cx="930"  cy="395" rx="65"  ry="40"  fill="#c8945a" opacity="0.5"  filter="url(#lgblur2)" transform="rotate(-15 930 395)"/>
+        <!-- cloud system 1 -->
+        <ellipse cx="870"  cy="255" rx="155" ry="90"  fill="url(#lgcloud)" filter="url(#lgblur2)" transform="rotate(-20 870 255)" opacity="0.85"/>
+        <ellipse cx="830"  cy="280" rx="115" ry="58"  fill="url(#lgcloud)" filter="url(#lgblur3)" transform="rotate(-15 830 280)" opacity="0.9"/>
+        <ellipse cx="910"  cy="232" rx="90"  ry="46"  fill="white"         filter="url(#lgblur3)" opacity="0.7"  transform="rotate(-25 910 232)"/>
+        <!-- cloud system 2 -->
+        <ellipse cx="1180" cy="362" rx="130" ry="74"  fill="url(#lgcloud)" filter="url(#lgblur2)" transform="rotate(10 1180 362)" opacity="0.8"/>
+        <ellipse cx="1222" cy="336" rx="90"  ry="50"  fill="white"         filter="url(#lgblur3)" opacity="0.75" transform="rotate(15 1222 336)"/>
+        <!-- cloud system 3 -->
+        <ellipse cx="1085" cy="640" rx="148" ry="66"  fill="url(#lgcloud)" filter="url(#lgblur2)" transform="rotate(-5 1085 640)" opacity="0.75"/>
+        <ellipse cx="1010" cy="320" rx="74"  ry="30"  fill="url(#lgcloud)" filter="url(#lgblur2)" transform="rotate(-30 1010 320)" opacity="0.7"/>
+        <!-- ocean glint -->
+        <ellipse cx="1085" cy="462" rx="42"  ry="25"  fill="#e8f4ff" opacity="0.35" filter="url(#lgblur2)" transform="rotate(20 1085 462)"/>
+        <!-- dark ocean -->
+        <ellipse cx="1150" cy="495" rx="115" ry="90"  fill="#041828" opacity="0.35" filter="url(#lgblur1)"/>
+        <!-- sunlight -->
+        <circle  cx="912"  cy="328" r="300"            fill="url(#lgsunlit)"/>
+        <!-- dark terminator -->
+        <circle  cx="1238" cy="462" r="265"            fill="url(#lgdarks)"/>
+        <!-- polar ice -->
+        <ellipse cx="1050" cy="102" rx="132" ry="42"  fill="white" opacity="0.55" filter="url(#lgblur2)"/>
+        <ellipse cx="1050" cy="798" rx="148" ry="38"  fill="white" opacity="0.5"  filter="url(#lgblur2)"/>
+      </g>
+      <!-- atmosphere -->
+      <circle cx="1050" cy="450" r="360" fill="url(#lgorglow)"/>
+      <circle cx="1050" cy="450" r="368" fill="none" stroke="#4a90d9" stroke-width="6"  opacity="0.3"/>
+      <circle cx="1050" cy="450" r="382" fill="none" stroke="#7ab8f5" stroke-width="3"  opacity="0.13"/>
+      <circle cx="1050" cy="450" r="400" fill="none" stroke="#1d4ed8" stroke-width="28" opacity="0.05"/>
+
+      <!-- circuit dots around earth -->
+      <circle cx="1050" cy="72"  r="6" fill="#f97316" opacity="0.8"/>
+      <circle cx="1364" cy="258" r="5" fill="#f97316" opacity="0.6"/>
+      <circle cx="1368" cy="642" r="5" fill="#60a5fa" opacity="0.6"/>
+      <circle cx="1050" cy="828" r="6" fill="#f97316" opacity="0.7"/>
+      <circle cx="736"  cy="642" r="5" fill="#60a5fa" opacity="0.5"/>
+      <circle cx="732"  cy="258" r="5" fill="#f97316" opacity="0.5"/>
+      <line x1="1050" y1="72"  x2="1364" y2="258" stroke="#f97316" stroke-width="0.8" opacity="0.2"/>
+      <line x1="1364" y1="258" x2="1368" y2="642" stroke="#60a5fa" stroke-width="0.8" opacity="0.18"/>
+      <line x1="1368" y1="642" x2="1050" y2="828" stroke="#f97316" stroke-width="0.8" opacity="0.2"/>
+      <line x1="1050" y1="828" x2="736"  y2="642" stroke="#f97316" stroke-width="0.8" opacity="0.18"/>
+      <line x1="736"  y1="642" x2="732"  y2="258" stroke="#60a5fa" stroke-width="0.8" opacity="0.18"/>
+      <line x1="732"  y1="258" x2="1050" y2="72"  stroke="#f97316" stroke-width="0.8" opacity="0.2"/>
+    </svg>
+  </div>
+
+  <!-- ===================== CONTENT ===================== -->
+  <div class="login-wrap">
+
+    <!-- LEFT: form -->
+    <div class="login-left">
+      <div class="login-glass">
+        <div class="login-brand">🛍 Bestian <span>Shop</span> POS</div>
+        <div class="login-tagline">Point of Sale System</div>
+        <div class="login-title">Sign In</div>
+
+        <div class="login-field">
+          <label for="user">Username</label>
+          <div class="login-input-wrap">
+            <span class="login-input-icon">👤</span>
+            <input id="user" type="text" placeholder="Enter your username" autocomplete="username"/>
+          </div>
+        </div>
+
+        <div class="login-field">
+          <label for="pass">Password</label>
+          <div class="login-input-wrap">
+            <span class="login-input-icon">🔒</span>
+            <input id="pass" type="password" placeholder="Enter your password" autocomplete="current-password"/>
+          </div>
+        </div>
+
+        <button id="loginBtn" class="login-btn">Login</button>
+
+        <div id="msg"></div>
+
+        <div class="login-footer">
+          New shop? <a href="register.html">Create an account</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: logo + info -->
+    <div class="login-right">
+      <div class="logo-ring-wrap">
+        <div class="logo-glow"></div>
+        <div class="logo-ring-outer"></div>
+        <div class="logo-ring-mid"></div>
+        <div class="logo-inner">
+          <div class="logo-b">B</div>
+        </div>
+      </div>
+
+      <div class="right-title">Welcome Back</div>
+      <div class="right-sub">Manage your shop, track sales and grow your business</div>
+
+      <div class="right-pills">
+        <div class="right-pill">📦 Inventory</div>
+        <div class="right-pill">💰 Sales</div>
+        <div class="right-pill">📊 Reports</div>
+        <div class="right-pill">👤 Customers</div>
+      </div>
+
+      <div class="right-company">Bestian Company Ltd &nbsp;·&nbsp; 0538500673</div>
+    </div>
+
+  </div>
+
+  <script type="module" src="js/login.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
+  </script>
+
+</body>
+</html>

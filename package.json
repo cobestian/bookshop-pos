@@ -1,0 +1,17 @@
+{
+  "name": "bookshop-pos",
+  "version": "1.0.0",
+  "main": "service-worker.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "mysql2": "^3.19.0"
+  }
+}
