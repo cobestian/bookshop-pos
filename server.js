@@ -14,7 +14,8 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+
+// DB connection here...
 
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST,
@@ -598,7 +599,8 @@ app.post("/adjustments", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+// Serve frontend LAST - after all API routes
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/{*path}", (req, res) => {
   const ext = path.extname(req.path);
@@ -609,6 +611,7 @@ app.get("/{*path}", (req, res) => {
   }
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`BESTIAN SHOP POS Server running on port ${PORT}`);
 });
