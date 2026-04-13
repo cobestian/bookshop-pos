@@ -98,16 +98,6 @@ async function initTables() {
 initTables();
 
 
-app.use(express.static(path.join(__dirname, "public")));
-
-app.get("/{*path}", (req, res) => {
-  const ext = path.extname(req.path);
-  if (ext && ext !== ".html") {
-    res.status(404).send("Not found");
-  } else {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-  }
-});
 
 /* =========================
    AUTH
