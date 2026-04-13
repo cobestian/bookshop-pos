@@ -96,8 +96,11 @@ async function initTables() {
 
 initTables();
 
-app.get("/", (req, res) => {
-  res.send("BESTIAN SHOP POS Server Running");
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/{*path}", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 /* =========================
