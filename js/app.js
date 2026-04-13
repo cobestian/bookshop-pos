@@ -147,7 +147,7 @@ function startApp() {
 function canAccess(s) {
   if (!currentUser) return false;
   if (currentUser.accessLevel === "SALESMAN") {
-    var blocked = ["stockLevel","dailyStockLevel","users","shopSettings","momoAccount","goodsReceivedReport","wholesaleReport"];
+    var blocked = ["stockLevel","dailyStockLevel","users","shopSettings"];
     if (blocked.indexOf(s) !== -1) return false;
   }
   return true;
@@ -1626,7 +1626,7 @@ async function stockLevel() {
     '</div>' +
     '<div class="grid2">' +
       '<div class="panel">' +
-        '<h3 style="margin:0 0 12px">Top Products by Stock Value</h3>' +
+        '<h3 style="margin:0 0 12px">Expense Breakdown</h3>' +
         '<canvas id="donutChart" height="260"></canvas>' +
         '<div id="donutLegend" style="margin-top:10px;font-size:12px"></div>' +
       '</div>' +
@@ -1672,37 +1672,71 @@ async function stockLevel() {
   $("#stFind").addEventListener("input", renderTable);
   renderTable();
 
-  // ---- DONUT CHART ----
-  var top = products.slice().sort(function(a,b){ return Number(b.qty||0)*Number(b.selling||0) - Number(a.qty||0)*Number(a.selling||0); }).slice(0, 7);
-  var colors = ["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6","#ec4899","#6366f1"];
+ // ---- DONUT CHART — Expense Accounts ----
+var expenses = [];
+try { expenses = await api("GET", "/expenses/" + currentUser.shopId); } catch(e){}
 
-  (function drawDonut() {
-    var canvas = document.getElementById("donutChart");
-    if (!canvas) return;
-    var ctx = canvas.getContext("2d");
-    var W = canvas.width = canvas.offsetWidth || 300;
-    var H = canvas.height = 260;
-    var cx = W/2, cy = H/2, R = Math.min(cx,cy) - 20, r = R * 0.55;
-    var total = top.reduce(function(s,p){ return s + Number(p.qty||0)*Number(p.selling||0); }, 0) || 1;
-    var angle = -Math.PI/2;
+// Group expenses by account
+var expByAcc = {};
+expenses.forEach(function(e) {
+  var key = e.account_name || "Other";
+  expByAcc[key] = (expByAcc[key]||0) + Number(e.amount||0);
+});
+var expEntries = Object.keys(expByAcc).map(function(k){ return {name:k, val:expByAcc[k]}; })
+  .sort(function(a,b){ return b.val - a.val; });
 
-    ctx.clearRect(0,0,W,H);
-    top.forEach(function(p, i) {
-      var val = Number(p.qty||0)*Number(p.selling||0);
-      var slice = (val/total) * Math.PI*2;
-      ctx.beginPath(); ctx.moveTo(cx,cy);
-      ctx.arc(cx,cy,R,angle,angle+slice); ctx.closePath();
-      ctx.fillStyle = colors[i % colors.length]; ctx.fill();
-      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-      angle += slice;
-    });
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle = getComputedStyle(document.body).getPropertyValue("--card") || "#fff"; ctx.fill();
+(function drawDonut() {
+  var canvas = document.getElementById("donutChart");
+  if (!canvas) return;
+  var ctx = canvas.getContext("2d");
+  var W = canvas.width = canvas.offsetWidth || 300;
+  var H = canvas.height = 260;
+  var cx = W/2, cy = H/2 - 10, R = Math.min(cx,cy) - 20, r = R * 0.55;
+  var colors = ["#ef4444","#f97316","#f59e0b","#10b981","#3b82f6","#8b5cf6","#ec4899"];
+  var total = expEntries.reduce(function(s,e){ return s + e.val; }, 0) || 1;
+  var angle = -Math.PI/2;
 
-    var legend = top.map(function(p, i) {
-      return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><div style="width:12px;height:12px;border-radius:3px;background:' + colors[i%colors.length] + ';flex-shrink:0"></div><span style="font-size:11px;color:var(--text)">' + esc(p.name.slice(0,30)) + '</span></div>';
+  ctx.clearRect(0,0,W,H);
+  if (expEntries.length === 0) {
+    ctx.fillStyle = "#9ca3af"; ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("No expense data yet", cx, cy); return;
+  }
+
+  expEntries.forEach(function(e, i) {
+    var slice = (e.val/total) * Math.PI*2;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R,angle,angle+slice); ctx.closePath();
+    ctx.fillStyle = colors[i % colors.length]; ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+    angle += slice;
+  });
+
+  // center hole
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--card") || "#fff";
+  ctx.fill();
+
+  // center text
+  ctx.fillStyle = "#6b7280"; ctx.font = "11px sans-serif"; ctx.textAlign = "center";
+  ctx.fillText("Expenses", cx, cy - 4);
+  ctx.fillStyle = "#1a1d2e"; ctx.font = "bold 13px sans-serif";
+  ctx.fillText(ghc(total), cx, cy + 12);
+
+  // legend
+  var legendEl = document.getElementById("donutLegend");
+  if (legendEl) {
+    legendEl.innerHTML = expEntries.map(function(e, i) {
+      var pct = ((e.val/total)*100).toFixed(1);
+      return '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          '<div style="width:10px;height:10px;border-radius:2px;background:' + colors[i%colors.length] + ';flex-shrink:0"></div>' +
+          '<span style="font-size:11px;color:var(--text)">' + esc(e.name) + '</span>' +
+        '</div>' +
+        '<span style="font-size:11px;font-weight:600;color:var(--text)">' + pct + '%</span>' +
+      '</div>';
     }).join("");
-    document.getElementById("donutLegend").innerHTML = legend;
-  })();
+  }
+})();
 
   // ---- BAR CHART ----
   var allSales = [], allGR = [];
@@ -1995,12 +2029,14 @@ async function goodsReceivedReport() {
         var d = (rec.created_at||"").slice(0,10);
         if (d < from || d > to) return;
         (rec.items||[]).forEach(function(item) {
-          var blob = (item.productName+" "+(item.invoiceNo||rec.invoice_no||"")).toLowerCase();
-          if (q && !blob.includes(q)) return;
-          var costValue = Number(item.qty||0)*Number(item.selling||0);
-          var margin    = Number(item.selling||0) - Number(item.cost||0);
-          rows.push({ date:d, supplierName:rec.supplier_name||"-", productName:item.productName, invoiceNo:item.invoiceNo||rec.invoice_no||"-", qty:item.qty, selling:item.selling, costValue, margin });
-        });
+  var pName = item.product_name || item.productName || "";
+  var invNo = item.invoice_no || item.invoiceNo || rec.invoice_no || "-";
+  var blob = (pName + " " + invNo).toLowerCase();
+  if (q && !blob.includes(q)) return;
+  var costValue = Number(item.qty||0) * Number(item.selling||0);
+  var margin    = Number(item.selling||0) - Number(item.cost||0);
+  rows.push({ date:d, supplierName:rec.supplier_name||"-", productName:pName, invoiceNo:invNo, qty:item.qty, selling:item.selling, costValue, margin });
+});
       });
       lastRows = rows;
       $("#grrTable tbody").innerHTML = rows.map(function(r){ return "<tr><td>" + esc(r.date) + "</td><td>" + esc(r.supplierName) + "</td><td>" + esc(r.productName) + "</td><td>" + esc(r.invoiceNo) + "</td><td>" + r.qty + "</td><td>" + ghc(r.selling) + "</td><td>" + ghc(r.costValue) + "</td>" + (!isSalesman ? '<td style="color:var(--success)">' + ghc(r.margin) + "</td>" : "") + "</tr>"; }).join("") || '<tr><td colspan="' + (isSalesman?7:8) + '" style="color:var(--muted)">No results.</td></tr>';
