@@ -2,7 +2,7 @@
    BESTIAN SHOP POS — app.js
 ============================================== */
 
-const API_BASE = "https://bookshop-pos-production.up.railway.app";
+const API_BASE = "";
 
 /* ---- API helper ---- */
 async function api(method, path, body) {

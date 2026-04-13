@@ -5,7 +5,7 @@ const app = express();
 
 // CORS
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "https://bookshop-pos.netlify.app");
+  res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
@@ -13,6 +13,8 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
 
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST,
@@ -589,6 +591,9 @@ app.post("/adjustments", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+app.get("/{*path}", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`BESTIAN SHOP POS Server running on port ${PORT}`);
 });

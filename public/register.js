@@ -1,4 +1,4 @@
-const API_BASE = "https://bookshop-pos-production.up.railway.app";
+const API_BASE = "";
 
 const shopNameEl = document.getElementById("shopName");
 const fullNameEl = document.getElementById("fullName");
