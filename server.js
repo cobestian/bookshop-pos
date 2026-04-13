@@ -1,5 +1,6 @@
 const express = require("express");
 const mysql = require("mysql2");
+const path = require("path");
 
 const app = express();
 
@@ -13,7 +14,6 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-const path = require("path");
 app.use(express.static(path.join(__dirname, "public")));
 
 const db = mysql.createConnection({
@@ -100,7 +100,12 @@ initTables();
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/{*path}", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  const ext = path.extname(req.path);
+  if (ext && ext !== ".html") {
+    res.status(404).send("Not found");
+  } else {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  }
 });
 
 /* =========================
@@ -594,9 +599,16 @@ app.post("/adjustments", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
 app.get("/{*path}", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  const ext = path.extname(req.path);
+  if (ext && ext !== ".html") {
+    res.status(404).send("Not found");
+  } else {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  }
 });
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`BESTIAN SHOP POS Server running on port ${PORT}`);
 });
