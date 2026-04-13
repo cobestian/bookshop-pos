@@ -7,6 +7,10 @@ const loginBtn = document.getElementById("loginBtn");
 
 loginBtn.addEventListener("click", login);
 
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") login();
+});
+
 async function login() {
   const username = userInput.value.trim();
   const password = passInput.value.trim();
@@ -19,9 +23,7 @@ async function login() {
   try {
     const res = await fetch(`${API_BASE}/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
     });
 
@@ -34,12 +36,9 @@ async function login() {
 
     localStorage.setItem("currentUser", JSON.stringify(data));
     window.location.href = "app.html";
-  } catch (err) {
+
+  } catch(err) {
     console.error(err);
-    msg.textContent = "Server error";
+    msg.textContent = "Server error. Please try again.";
   }
 }
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") login();
-});
