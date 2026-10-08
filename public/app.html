@@ -22,7 +22,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/app.css?v=3" />
+  <link rel="stylesheet" href="css/app.css?v=4" />
 </head>
 
 <body class="app">
@@ -121,6 +121,13 @@
         </div>
       </header>
 
+      <!-- TABS -->
+      <div class="tabStrip">
+        <div class="tabs" id="tabs" role="tablist"></div>
+        <button class="tabNew" id="tabNew" title="New tab" aria-label="New tab"><i data-icon="plus"></i></button>
+        <button class="tabReload" id="tabReload" title="Reload this tab" aria-label="Reload this tab"><i data-icon="refresh"></i></button>
+      </div>
+
       <!-- MAIN -->
       <main class="main">
         <div class="pageHead">
@@ -133,13 +140,13 @@
             <div><div class="dateChipLbl">Today</div><div class="dateChipVal" id="todayChip"></div></div>
           </div>
         </div>
-        <section id="screen"></section>
+        <div id="panes"></div>
       </main>
 
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=3"></script>
+  <script type="module" src="js/app.js?v=4"></script>
   <script>
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
   </script>

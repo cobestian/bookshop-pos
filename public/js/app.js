@@ -2,7 +2,7 @@
    BESTIAN SHOP POS — app.js
 ============================================== */
 
-import { icon, hydrateIcons } from "./icons.js";
+import { icon, hydrateIcons } from "./icons.js?v=4";
 
 const API_BASE = "";
 
@@ -93,7 +93,7 @@ document.addEventListener("keydown", function(e) {
   }
 });
 
-function $(q) { return screenEl.querySelector(q); }
+function $(q) { return screenEl.querySelector(q) || (panesEl ? panesEl.querySelector(q) : null); }
 
 /* ==============================================
    START
@@ -126,7 +126,7 @@ function applyTheme(t) {
   var meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute("content", THEME_COLORS[t]);
   // charts read theme colours, so redraw the dashboard if it is showing
-  if (window.__redrawCharts) window.__redrawCharts();
+  if (activeTab && activeTab.pane.__redraw) activeTab.pane.__redraw();
 }
 
 function closeMenus(except) {
@@ -144,9 +144,7 @@ function bindDrop(btnId, menuId) {
 }
 
 function startApp() {
-  screenEl  = document.getElementById("screen");
   sidebarEl = document.getElementById("sidebar");
-  screen    = screenEl;
 
   if (!currentUser) { window.location.href = "index.html"; return; }
 
@@ -198,7 +196,8 @@ function startApp() {
   });
 
   initGlobalSearch();
-  load("dashboard");
+  initTabs();
+  restoreTabs();
 }
 
 /* navigate to a screen (checks access, syncs the sidebar) */
@@ -223,40 +222,362 @@ function applyNavPermissions() {
   });
 }
 
-function load(name) {
-  window.__primaryActionSel = null;
-  window.__redrawCharts = null;
-  var map = {
-    dashboard: dashboard,
-    products: productsSetup,
-    suppliers: suppliersSetup,
-    customers: customersSetup,
-    categories: categoriesSetup,
-    users: manageUsers,
-    shopSettings: shopSettings,
-    cashSales: cashSales,
-    goodsReceived: goodsReceived,
-    customerGoods: customerGoodsWholesale,
-    customerPayments: customerPayments,
-    momoAccount: momoAccount,
-    adjustment: adjustment,
-    expenseAccounts: expenseAccountsSetup,
-    recordExpense: recordExpense,
-    expenseReport: expensesReport,
-    stockLevel: stockLevel,
-    dailyStockLevel: dailyStockLevel,
-    dailySalesReport: dailySalesReport,
-    wholesaleReport: wholesaleReport,
-    goodsReceivedReport: goodsReceivedReport,
-    adjustmentReport: adjustmentReport,
-    endOfDay: endOfDay
+/* ==============================================
+   TABS (Chrome-style) — each open screen keeps its own pane,
+   so switching tabs keeps carts, filters and scroll position.
+============================================== */
+var SCREENS = {
+  dashboard: dashboard,
+  products: productsSetup,
+  suppliers: suppliersSetup,
+  customers: customersSetup,
+  categories: categoriesSetup,
+  users: manageUsers,
+  shopSettings: shopSettings,
+  cashSales: cashSales,
+  goodsReceived: goodsReceived,
+  customerGoods: customerGoodsWholesale,
+  customerPayments: customerPayments,
+  momoAccount: momoAccount,
+  adjustment: adjustment,
+  expenseAccounts: expenseAccountsSetup,
+  recordExpense: recordExpense,
+  expenseReport: expensesReport,
+  stockLevel: stockLevel,
+  dailyStockLevel: dailyStockLevel,
+  dailySalesReport: dailySalesReport,
+  wholesaleReport: wholesaleReport,
+  goodsReceivedReport: goodsReceivedReport,
+  adjustmentReport: adjustmentReport,
+  endOfDay: endOfDay,
+  newtab: newTabPage
+};
+
+var tabs = [];
+var activeTab = null;
+var tabsEl = null;
+var panesEl = null;
+
+function tabKey() { return "openTabs_" + currentUser.shopId + "_" + (currentUser.fullName || ""); }
+
+function tabInfo(name) {
+  if (name === "newtab") return { label: "New Tab", ic: "plus" };
+  var b = document.querySelector('.navBtn[data-screen="' + name + '"]');
+  return {
+    label: b ? b.querySelector("span").textContent : name,
+    ic: b ? b.querySelector("[data-icon]").dataset.icon : "box"
   };
-  if (!map[name]) name = "dashboard";
-  document.querySelectorAll(".navBtn").forEach(function(b) { b.classList.toggle("active", b.dataset.screen === name); });
+}
+
+function findTab(name) {
+  for (var i = 0; i < tabs.length; i++) if (tabs[i].screen === name) return tabs[i];
+  return null;
+}
+
+function createTab(name, index) {
+  var pane = document.createElement("section");
+  pane.className = "tabPane";
+  pane.hidden = true;
+  panesEl.appendChild(pane);
+  var t = { screen: name, pane: pane, rendered: false, loading: false, title: "", sub: "", primary: null, scroll: 0, promise: Promise.resolve() };
+  if (index == null || index > tabs.length) tabs.push(t); else tabs.splice(index, 0, t);
+  return t;
+}
+
+function saveTabs() {
+  try {
+    localStorage.setItem(tabKey(), JSON.stringify({
+      list: tabs.map(function(t){ return t.screen; }),
+      active: activeTab ? activeTab.screen : "dashboard"
+    }));
+  } catch (e) {}
+}
+
+function restoreTabs() {
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem(tabKey()) || "null"); } catch (e) {}
+  var list = (saved && saved.list || []).filter(function(n, i, a) {
+    return SCREENS[n] && canAccess(n) && a.indexOf(n) === i;
+  });
+  if (!list.length) return load("dashboard");
+  list.forEach(function(n){ createTab(n); });
+  var act = findTab(saved.active) || tabs[0];
+  activate(act);
+}
+
+function hasUnsavedRows(t) {
+  // cart-style screens mark their line items with data-row
+  return !!(t && t.pane.querySelector("tbody tr[data-row]"));
+}
+
+function renderTab(t) {
+  screenEl = screen = t.pane;
+  t.pane.innerHTML = pageSkeleton();
+  t.pane.__redraw = null;
+  window.__primaryActionSel = null;
+  pageTitle.textContent = tabInfo(t.screen).label;
   if (pageSub) pageSub.textContent = "";
+  t.rendered = true;
+  t.loading = true;
+  renderTabs();
+
+  var p;
+  try { p = Promise.resolve(SCREENS[t.screen]()); }
+  catch (err) { p = Promise.reject(err); }
+
+  // screens set their title / primary action synchronously before any await
+  t.title = pageTitle.textContent;
+  t.sub = pageSub ? pageSub.textContent : "";
+  t.primary = window.__primaryActionSel;
+
+  t.promise = p.catch(function(err) {
+    console.error(err);
+    if (t.pane.querySelector(".pageSkel")) {
+      t.pane.innerHTML = '<div class="panel" style="color:var(--danger)">Could not load this page: ' + esc(err && err.message || err) + '</div>';
+    }
+  }).then(function() {
+    t.loading = false;
+    renderTabs();
+  });
+  return t.promise;
+}
+
+function activate(t) {
+  var main = document.querySelector(".main");
+  if (activeTab && activeTab !== t && main) activeTab.scroll = main.scrollTop;
+
+  activeTab = t;
+  tabs.forEach(function(x){ x.pane.hidden = x !== t; });
+  screenEl = screen = t.pane;
+  document.querySelectorAll(".navBtn").forEach(function(b) { b.classList.toggle("active", b.dataset.screen === t.screen); });
+
+  if (!t.rendered) {
+    if (main) main.scrollTop = 0;
+    renderTab(t);
+  } else {
+    pageTitle.textContent = t.title;
+    if (pageSub) pageSub.textContent = t.sub;
+    window.__primaryActionSel = t.primary;
+    if (main) main.scrollTop = t.scroll || 0;
+    if (t.pane.__redraw) t.pane.__redraw();
+    renderTabs();
+  }
+  saveTabs();
+  var el = tabsEl && tabsEl.querySelector('.tab[data-k="' + t.screen + '"]');
+  if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest", inline: "nearest" });
+  return t.promise;
+}
+
+/* open (or switch to) a screen's tab */
+function load(name) {
+  if (!SCREENS[name]) name = "dashboard";
+  var t = findTab(name);
+  if (!t) {
+    var at = activeTab ? tabs.indexOf(activeTab) + 1 : tabs.length;
+    t = createTab(name, at);
+  }
+  return activate(t);
+}
+
+function closeTab(t) {
+  if (hasUnsavedRows(t) && !confirm("This tab has items that are not saved yet. Close it anyway?")) return;
+  var i = tabs.indexOf(t);
+  if (i === -1) return;
+  tabs.splice(i, 1);
+  t.pane.remove();
+  if (t === activeTab) {
+    activeTab = null;
+    var next = tabs[i] || tabs[i - 1];
+    if (next) activate(next); else load("dashboard");
+  } else {
+    renderTabs();
+    saveTabs();
+  }
+}
+
+function reloadTab() {
+  if (!activeTab) return;
+  if (hasUnsavedRows(activeTab) && !confirm("Reloading will clear the items that are not saved yet. Continue?")) return;
   var main = document.querySelector(".main");
   if (main) main.scrollTop = 0;
-  return map[name]();
+  renderTab(activeTab);
+}
+
+function renderTabs() {
+  if (!tabsEl) return;
+  tabsEl.innerHTML = tabs.map(function(t) {
+    var info = tabInfo(t.screen);
+    return '<div class="tab' + (t === activeTab ? " active" : "") + '" data-k="' + t.screen + '" role="tab" aria-selected="' + (t === activeTab) + '" title="' + esc(info.label) + '" draggable="true">' +
+      '<span class="tabSep"></span>' +
+      '<span class="tabIco">' + (t.loading ? '<span class="spin"></span>' : icon(info.ic)) + '</span>' +
+      '<span class="tabTitle">' + esc(info.label) + '</span>' +
+      '<button class="tabX" aria-label="Close tab" title="Close tab">' + icon("x") + '</button>' +
+    '</div>';
+  }).join("");
+}
+
+function initTabs() {
+  tabsEl = document.getElementById("tabs");
+  panesEl = document.getElementById("panes");
+  screenEl = screen = panesEl;
+
+  tabsEl.addEventListener("click", function(e) {
+    var el = e.target.closest(".tab");
+    if (!el) return;
+    var t = findTab(el.dataset.k);
+    if (!t) return;
+    if (e.target.closest(".tabX")) { e.stopPropagation(); closeTab(t); return; }
+    if (t !== activeTab) activate(t);
+  });
+  // middle-click closes, like a browser
+  tabsEl.addEventListener("mousedown", function(e) { if (e.button === 1 && e.target.closest(".tab")) e.preventDefault(); });
+  tabsEl.addEventListener("auxclick", function(e) {
+    if (e.button !== 1) return;
+    var el = e.target.closest(".tab");
+    var t = el && findTab(el.dataset.k);
+    if (t) closeTab(t);
+  });
+  // vertical mouse wheel scrolls the strip sideways
+  tabsEl.addEventListener("wheel", function(e) {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { tabsEl.scrollLeft += e.deltaY; }
+  }, { passive: true });
+
+  // drag to reorder
+  var dragKey = null;
+  tabsEl.addEventListener("dragstart", function(e) {
+    var el = e.target.closest(".tab");
+    if (!el) return;
+    dragKey = el.dataset.k;
+    el.classList.add("dragging");
+    try { e.dataTransfer.setData("text/plain", dragKey); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
+  });
+  tabsEl.addEventListener("dragover", function(e) {
+    if (!dragKey) return;
+    e.preventDefault();
+    var el = e.target.closest(".tab");
+    if (!el || el.dataset.k === dragKey) return;
+    var from = findTab(dragKey), to = findTab(el.dataset.k);
+    var r = el.getBoundingClientRect();
+    var after = e.clientX > r.left + r.width / 2;
+    tabs.splice(tabs.indexOf(from), 1);
+    tabs.splice(tabs.indexOf(to) + (after ? 1 : 0), 0, from);
+    renderTabs();
+    var d = tabsEl.querySelector('.tab[data-k="' + dragKey + '"]');
+    if (d) d.classList.add("dragging");
+  });
+  tabsEl.addEventListener("dragend", function() { dragKey = null; renderTabs(); saveTabs(); });
+
+  document.getElementById("tabNew").addEventListener("click", function() { load("newtab"); });
+  document.getElementById("tabReload").addEventListener("click", reloadTab);
+
+  window.addEventListener("resize", function() {
+    clearTimeout(window.__rszT);
+    window.__rszT = setTimeout(function() { if (activeTab && activeTab.pane.__redraw) activeTab.pane.__redraw(); }, 150);
+  });
+}
+
+/* New Tab page: launcher for every screen the user can open */
+function newTabPage() {
+  pageTitle.textContent = "New Tab";
+  if (pageSub) pageSub.textContent = "Open a page in this tab";
+  var root = screen;
+  var html = "", group = "Main", items = [];
+  function flush() {
+    if (!items.length) return;
+    html += '<div class="sectionTitle">' + esc(group) + '</div><div class="launch">' + items.join("") + '</div>';
+    items = [];
+  }
+  document.querySelectorAll(".sideNav > *").forEach(function(el) {
+    if (el.classList.contains("navGroup")) { flush(); group = el.textContent; return; }
+    if (!el.classList.contains("navBtn") || el.style.display === "none") return;
+    var info = tabInfo(el.dataset.screen);
+    var open = findTab(el.dataset.screen);
+    items.push('<button class="launchItem" data-go="' + el.dataset.screen + '">' + icon(info.ic) + '<span>' + esc(info.label) + '</span>' + (open ? '<em>Open</em>' : '') + '</button>');
+  });
+  flush();
+  root.innerHTML = html;
+  root.querySelectorAll("[data-go]").forEach(function(b) {
+    b.addEventListener("click", function() {
+      var target = b.dataset.go;
+      var self = findTab("newtab");
+      var existing = findTab(target);
+      if (existing) {
+        if (self) { tabs.splice(tabs.indexOf(self), 1); self.pane.remove(); if (activeTab === self) activeTab = null; }
+        activate(existing);
+      } else if (self) {
+        self.screen = target;
+        self.rendered = false;
+        activate(self);
+      } else {
+        load(target);
+      }
+    });
+  });
+}
+
+/* ==============================================
+   SKELETON LOADERS
+============================================== */
+function sk(w, h, extra) {
+  return '<span class="sk" style="width:' + (w || "100%") + (h ? ";height:" + h : "") + (extra ? ";" + extra : "") + '"></span>';
+}
+
+function skRows(cols, n) {
+  var widths = ["78%", "56%", "64%", "42%", "70%", "50%"];
+  var out = "";
+  for (var r = 0; r < (n || 6); r++) {
+    out += '<tr class="skRow">';
+    for (var c = 0; c < cols; c++) out += '<td>' + sk(widths[(r + c) % widths.length]) + '</td>';
+    out += '</tr>';
+  }
+  return out;
+}
+
+/* put skeleton rows into every table on the page the element belongs to */
+function skelIn(el) {
+  var root = (el && el.closest && el.closest(".tabPane")) || screenEl;
+  if (!root) return;
+  root.querySelectorAll("table.table").forEach(function(t) {
+    var tb = t.querySelector("tbody");
+    if (!tb) return;
+    var cols = t.querySelectorAll("thead th").length || 3;
+    tb.innerHTML = skRows(cols, 5);
+  });
+}
+
+function pageSkeleton() {
+  var field = '<div>' + sk("40%", "10px", "margin-bottom:8px") + sk("100%", "38px", "border-radius:10px") + '</div>';
+  return '<div class="pageSkel grid2">' +
+    '<div class="panel">' + sk("45%", "16px", "margin-bottom:14px") + sk("100%", "38px", "border-radius:10px;margin-bottom:12px") +
+      '<table class="table" style="margin-top:0"><tbody>' + skRows(2, 7) + '</tbody></table>' +
+    '</div>' +
+    '<div class="panel">' + sk("35%", "16px", "margin-bottom:16px") +
+      '<div class="grid3" style="margin-bottom:14px">' + field + field + field + '</div>' +
+      '<div class="grid3" style="margin-bottom:18px">' + field + field + field + '</div>' +
+      '<div style="display:flex;gap:8px">' + sk("84px", "38px", "border-radius:10px") + sk("84px", "38px", "border-radius:10px") + sk("84px", "38px", "border-radius:10px") + '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function dashSkeleton() {
+  var kpi = '<div class="kpi skCard">' + sk("48px", "48px", "border-radius:14px;flex-shrink:0") +
+    '<div class="kpiBody">' + sk("55%", "12px", "margin-bottom:10px") + sk("45%", "24px", "margin-bottom:10px") + sk("65%", "10px") + '</div></div>';
+  var qa = '<div class="qa skCard">' + sk("56px", "56px", "border-radius:16px") + sk("60%", "12px") + '</div>';
+  var tableRows = '<table class="table" style="margin-top:0"><tbody>' + skRows(4, 5) + '</tbody></table>';
+  return '<div class="kpis">' + kpi + kpi + kpi + kpi + '</div>' +
+    sk("140px", "18px", "margin:6px 0 14px") +
+    '<div class="qas">' + qa + qa + qa + qa + qa + '</div>' +
+    '<div class="dashGrid">' +
+      '<div class="panel">' + sk("30%", "16px", "margin-bottom:16px") + sk("100%", "220px", "border-radius:12px") + '</div>' +
+      '<div class="panel">' + sk("45%", "16px", "margin-bottom:16px") +
+        '<div class="donutWrap">' + sk("170px", "170px", "border-radius:50%;flex-shrink:0") +
+          '<div class="legend">' + sk("90%") + sk("80%") + sk("85%") + sk("70%") + '</div></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="dashGrid">' +
+      '<div class="panel">' + sk("30%", "16px", "margin-bottom:16px") + tableRows + '</div>' +
+      '<div class="panel">' + sk("40%", "16px", "margin-bottom:16px") + tableRows + '</div>' +
+    '</div>';
 }
 
 /* ==============================================
@@ -504,7 +825,8 @@ function drawDonut(el, legendEl, totalEl, groups) {
 async function dashboard() {
   pageTitle.textContent = "Dashboard";
   if (pageSub) pageSub.textContent = "Welcome back, " + (currentUser.fullName || "");
-  screen.innerHTML = '<div class="empty">Loading dashboard...</div>';
+  var root = screen;
+  root.innerHTML = dashSkeleton();
 
   try {
     var results = await Promise.all([
@@ -555,7 +877,7 @@ async function dashboard() {
     var reportScr = canAccess("dailySalesReport") ? "dailySalesReport" : "cashSales";
     var stockScr = canAccess("stockLevel") ? "stockLevel" : "products";
 
-    screen.innerHTML =
+    root.innerHTML =
       '<div class="kpis">' +
         kpi("products", "box", "#3b82f6", "Products", products.length, "Total items", { footCls: "accent" }) +
         kpi("customers", "users", "#8b5cf6", "Customers", customers.length, "Total customers · " + suppliers.length + " suppliers") +
@@ -612,13 +934,13 @@ async function dashboard() {
         '</div>' +
       '</div>';
 
-    screen.querySelectorAll("[data-go]").forEach(function(el) {
+    root.querySelectorAll("[data-go]").forEach(function(el) {
       el.addEventListener("click", function() { go(el.dataset.go); });
     });
 
     /* sales chart */
-    var chartBox = document.getElementById("salesChart");
-    var rangeSel = document.getElementById("salesRange");
+    var chartBox = root.querySelector("#salesChart");
+    var rangeSel = root.querySelector("#salesRange");
     function rangeKeys() {
       var v = rangeSel.value;
       if (v === "month") return lastDays(new Date().getDate());
@@ -642,22 +964,13 @@ async function dashboard() {
       var rest = groups.slice(4).reduce(function(a, g){ return a + g.value; }, 0);
       groups = groups.slice(0, 4).concat([{ name: "Others", value: rest }]);
     }
-    function drawExp() { drawDonut(document.getElementById("expDonut"), document.getElementById("expLegend"), document.getElementById("expTotal"), groups); }
+    function drawExp() { drawDonut(root.querySelector("#expDonut"), root.querySelector("#expLegend"), root.querySelector("#expTotal"), groups); }
 
-    window.__redrawCharts = function() { drawSales(); drawExp(); };
-    window.__redrawCharts();
-
-    if (!window.__dashResizeBound) {
-      window.__dashResizeBound = true;
-      var rt;
-      window.addEventListener("resize", function() {
-        clearTimeout(rt);
-        rt = setTimeout(function(){ if (window.__redrawCharts) window.__redrawCharts(); }, 150);
-      });
-    }
+    root.__redraw = function() { if (!root.hidden) { drawSales(); drawExp(); } };
+    drawSales(); drawExp();
 
   } catch(err) {
-    screen.innerHTML = '<div class="panel" style="color:var(--danger)">Failed to load dashboard: ' + esc(err.message) + '</div>';
+    root.innerHTML = '<div class="panel" style="color:var(--danger)">Failed to load dashboard: ' + esc(err.message) + '</div>';
   }
 }
 
@@ -674,6 +987,7 @@ function updateBell(n) {
 async function productsSetup() {
   pageTitle.textContent = "Products Setup";
   setPrimaryAction("#pSave");
+  var root = screen;
 
   var cats = getCategories(currentUser.shopId);
   var allSuppliers = [];
@@ -682,14 +996,14 @@ async function productsSetup() {
   var catOpts = '<option value="">-- Select Category --</option>' + cats.map(function(c){ return '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>'; }).join("");
   var supOpts = '<option value="">-- Select Supplier --</option>' + allSuppliers.map(function(s){ return '<option value="' + esc(s.name) + '">' + esc(s.name) + '</option>'; }).join("");
 
-  screen.innerHTML =
+  root.innerHTML =
     '<div class="grid2">' +
       '<div class="panel">' +
         '<h3 style="margin:0 0 10px">Product List</h3>' +
         '<input id="pFind" placeholder="Search products..."/>' +
         '<div class="product-list-wrap">' +
           '<table class="table" id="pTable"><thead><tr><th>Product</th><th>Stock</th><th>Selling</th></tr></thead>' +
-          '<tbody><tr><td colspan="3" style="color:var(--muted)">Loading...</td></tr></tbody></table>' +
+          '<tbody>' + skRows(3, 6) + '</tbody></table>' +
         '</div>' +
       '</div>' +
       '<div class="panel">' +
@@ -906,7 +1220,7 @@ async function suppliersSetup() {
         '<input id="sFind" placeholder="Search supplier..."/>' +
         '<div class="product-list-wrap">' +
           '<table class="table" id="sTable"><thead><tr><th>Acc No</th><th>Name</th><th>Balance</th></tr></thead>' +
-          '<tbody><tr><td colspan="3" style="color:var(--muted)">Loading...</td></tr></tbody></table>' +
+          '<tbody>' + skRows(3, 6) + '</tbody></table>' +
         '</div>' +
       '</div>' +
       '<div class="panel">' +
@@ -1623,7 +1937,7 @@ async function customerPayments() {
       '</div>' +
       '<div class="panel">' +
         '<h3 style="margin:0 0 10px">Account Info</h3>' +
-        '<div class="lbl">Account Name</div><div id="cpName" style="font-weight:700;margin-bottom:10px">-</div>' +
+        '<div class="lbl">Account Name</div><div id="payAccName" style="font-weight:700;margin-bottom:10px">-</div>' +
         '<div class="lbl">Current Balance</div><div id="cpBal" style="font-weight:700;font-size:18px;margin-bottom:10px">' + ghc(0) + '</div>' +
         '<div class="lbl">Last Payment</div><div id="cpLast" style="font-weight:700;margin-bottom:10px">' + ghc(0) + '</div>' +
       '</div>' +
@@ -1648,10 +1962,10 @@ async function customerPayments() {
 
   function refreshPanel() {
     var c = getCust();
-    if (!c) { $("#cpName").textContent = "-"; ["#cpBal","#cpLast","#payCur","#payRemain"].forEach(function(s){ $(s).textContent = ghc(0); }); return; }
+    if (!c) { $("#payAccName").textContent = "-"; ["#cpBal","#cpLast","#payCur","#payRemain"].forEach(function(s){ $(s).textContent = ghc(0); }); return; }
     var bal = Number(c.balance||0);
     var lastPay = allPayments.filter(function(p){ return String(p.customer_id) === String(c.id); }).sort(function(a,b){ return (b.created_at||"").localeCompare(a.created_at||""); })[0];
-    $("#cpName").textContent = c.account_name;
+    $("#payAccName").textContent = c.account_name;
     $("#cpBal").textContent = ghc(bal);
     $("#cpLast").textContent = ghc(lastPay ? lastPay.amount : 0);
     $("#payCur").textContent = ghc(bal);
@@ -1748,6 +2062,7 @@ async function momoAccount() {
     '</div>';
 
   $("#momoSearch").addEventListener("click", async function() {
+    skelIn(this);
     var from = $("#momoFrom").value, to = $("#momoTo").value;
     try {
       var results = await Promise.all([api("GET", "/sales/" + currentUser.shopId), api("GET", "/expenses/" + currentUser.shopId)]);
@@ -1935,6 +2250,7 @@ async function expensesReport() {
   }
 
   $("#erSearch").addEventListener("click", async function() {
+    skelIn(this);
     try {
       var from = $("#erFrom").value, to = $("#erTo").value;
       var rows = await api("GET", "/expenses/" + currentUser.shopId);
@@ -1968,7 +2284,7 @@ async function stockLevel() {
       '<div class="table-wrap">' +
         '<table class="table" id="stTable">' +
           '<thead><tr><th>PRODUCT</th><th>SUPPLIER</th><th>CATEGORY</th><th>QTY</th><th>COST</th><th>SELLING</th><th>WHOLESALE</th><th>MARGIN</th></tr></thead>' +
-          '<tbody><tr><td colspan="8" style="color:var(--muted)">Loading...</td></tr></tbody>' +
+          '<tbody>' + skRows(8, 6) + '</tbody>' +
         '</table>' +
       '</div>' +
       '<div id="stTotals" style="margin-top:12px"></div>' +
@@ -2184,6 +2500,7 @@ async function dailyStockLevel() {
     '</div>';
 
   $("#dslSearch").addEventListener("click", async function() {
+    skelIn(this);
     var date = $("#dslDate").value;
     try {
       var rr = await Promise.all([api("GET", "/sales/" + currentUser.shopId), api("GET", "/products/" + currentUser.shopId)]);
@@ -2249,6 +2566,7 @@ async function dailySalesReport() {
   }
 
   $("#dsSearch").addEventListener("click", async function() {
+    skelIn(this);
     try {
       var from = $("#dsFrom").value, to = $("#dsTo").value;
       var sales = await api("GET", "/sales/" + currentUser.shopId);
@@ -2313,6 +2631,7 @@ async function wholesaleReport() {
   }
 
   $("#wrSearch").addEventListener("click", async function() {
+    skelIn(this);
     try {
       var from = $("#wrFrom").value, to = $("#wrTo").value;
       var sales = await api("GET", "/wholesale-sales/" + currentUser.shopId);
@@ -2370,6 +2689,7 @@ async function goodsReceivedReport() {
   var lastRows = [];
 
   async function doSearch() {
+    if (!this || this.id !== "grrFind") skelIn($("#grrSearch"));
     try {
       var from = $("#grrFrom").value, to = $("#grrTo").value, q = ($("#grrFind").value||"").toLowerCase();
       var records = await api("GET", "/goods-received/" + currentUser.shopId);
@@ -2444,6 +2764,7 @@ async function adjustmentReport() {
   var lastRows = [];
 
   $("#arSearch").addEventListener("click", async function() {
+    skelIn(this);
     var from = $("#arFrom").value, to = $("#arTo").value, type = $("#arType").value;
     try {
       var rows = await api("GET", "/adjustments/" + currentUser.shopId);
@@ -2503,6 +2824,7 @@ async function endOfDay() {
   var lastSalesRows = [], lastExpRows = [];
 
   async function run() {
+    skelIn($("#eodRun"));
     try {
       var rr = await Promise.all([api("GET", "/sales/" + currentUser.shopId), api("GET", "/expenses/" + currentUser.shopId)]);
       var sales = rr[0], expenses = rr[1];
@@ -2577,7 +2899,7 @@ async function manageUsers() {
         '<input id="uFind" placeholder="Search user..."/>' +
         '<div class="product-list-wrap">' +
           '<table class="table" id="uTable"><thead><tr><th>FULL NAME</th><th>USERNAME</th><th>ROLE</th><th>STATUS</th></tr></thead>' +
-          '<tbody><tr><td colspan="4" style="color:var(--muted)">Loading...</td></tr></tbody></table>' +
+          '<tbody>' + skRows(4, 6) + '</tbody></table>' +
         '</div>' +
         '<div class="btnRow">' +
           '<button class="btn2" id="uRemove">REMOVE</button>' +
