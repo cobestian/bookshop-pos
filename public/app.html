@@ -6,89 +6,140 @@
   <title>BESTIAN SHOP POS</title>
 
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1f3c88">
+  <meta name="theme-color" content="#16a34a">
+
+  <!-- apply saved theme before paint (avoids a flash of the wrong theme) -->
+  <script>
+    (function () {
+      var t = localStorage.getItem("theme") || "light";
+      if (t === "warm") t = "light";
+      if (t === "space") t = "glass";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/app.css?v=3" />
 </head>
 
-<body class="app" data-theme="light">
+<body class="app">
 
-  <!-- TOP BAR -->
-  <header class="topbar">
-    <div class="topLeft">
-      <button class="iconBtn" id="menuToggle">☰</button>
-      <div class="brand">
-        <div class="brandName">🛍 BESTIAN SHOP POS</div>
-        <div class="brandSub" id="whoami"></div>
-        <div class="brandCompany">BESTIAN COMPANY LTD &nbsp;·&nbsp; 0538500673, 0503384635</div>
-      </div>
-    </div>
-    <div class="topRight">
-      <label class="row">
-        <span>Theme</span>
-        <select id="themeSelect">
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="warm">Warm</option>
-          <option value="space">Space</option>
-        </select>
-      </label>
-      <button class="dangerBtn" id="logoutBtn">Logout</button>
-    </div>
-  </header>
-
-  <div class="layout">
+  <div class="shell">
 
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
+      <div class="sideBrand">
+        <img class="sideLogo" src="logo.jpeg" alt="" />
+        <div class="sideBrandText">
+          <div class="brandName">BESTIAN SHOP POS</div>
+          <div class="brandSub">Shop Management System</div>
+        </div>
+      </div>
 
-      <button class="navBtn active" data-screen="dashboard">🏠 Dashboard</button>
+      <nav class="sideNav">
+        <button class="navBtn active" data-screen="dashboard"><i data-icon="home"></i><span>Dashboard</span></button>
 
-      <div class="navGroup">Setup</div>
-      <button class="navBtn" data-screen="products">📦 Products</button>
-      <button class="navBtn" data-screen="suppliers">🏭 Suppliers</button>
-      <button class="navBtn" data-screen="customers">👤 Customers</button>
-      <button class="navBtn" data-screen="categories">🏷️ Categories</button>
-      <button class="navBtn" data-screen="users">👥 Manage Users</button>
-      <button class="navBtn" data-screen="shopSettings">⚙️ Shop Settings</button>
+        <div class="navGroup">Setup</div>
+        <button class="navBtn" data-screen="products"><i data-icon="box"></i><span>Products</span></button>
+        <button class="navBtn" data-screen="suppliers"><i data-icon="truck"></i><span>Suppliers</span></button>
+        <button class="navBtn" data-screen="customers"><i data-icon="users"></i><span>Customers</span></button>
+        <button class="navBtn" data-screen="categories"><i data-icon="tag"></i><span>Categories</span></button>
+        <button class="navBtn" data-screen="users"><i data-icon="userCog"></i><span>Manage Users</span></button>
+        <button class="navBtn" data-screen="shopSettings"><i data-icon="settings"></i><span>Shop Settings</span></button>
 
-      <div class="navGroup">Transactions</div>
-      <button class="navBtn" data-screen="cashSales">💰 Cash Sales</button>
-      <button class="navBtn" data-screen="goodsReceived">🚚 Goods Received</button>
-      <button class="navBtn" data-screen="customerGoods">🧾 Customer Goods (Wholesale)</button>
-      <button class="navBtn" data-screen="customerPayments">💳 Customer Payments</button>
-      <button class="navBtn" data-screen="momoAccount">📱 MoMo Account</button>
-      <button class="navBtn" data-screen="adjustment">🔄 Adjustment</button>
+        <div class="navGroup">Transactions</div>
+        <button class="navBtn" data-screen="cashSales"><i data-icon="coins"></i><span>Cash Sales</span></button>
+        <button class="navBtn" data-screen="goodsReceived"><i data-icon="package"></i><span>Goods Received</span></button>
+        <button class="navBtn" data-screen="customerGoods"><i data-icon="receipt"></i><span>Customer Goods (Wholesale)</span></button>
+        <button class="navBtn" data-screen="customerPayments"><i data-icon="card"></i><span>Customer Payments</span></button>
+        <button class="navBtn" data-screen="momoAccount"><i data-icon="phone"></i><span>MoMo Account</span></button>
+        <button class="navBtn" data-screen="adjustment"><i data-icon="refresh"></i><span>Adjustment</span></button>
 
-      <div class="navGroup">Expenses</div>
-      <button class="navBtn" data-screen="expenseAccounts">🧾 Expense Accounts</button>
-      <button class="navBtn" data-screen="recordExpense">✍️ Record Expense</button>
-      <button class="navBtn" data-screen="expenseReport">📑 Expenses Report</button>
+        <div class="navGroup">Expenses</div>
+        <button class="navBtn" data-screen="expenseAccounts"><i data-icon="wallet"></i><span>Expense Accounts</span></button>
+        <button class="navBtn" data-screen="recordExpense"><i data-icon="edit"></i><span>Record Expense</span></button>
+        <button class="navBtn" data-screen="expenseReport"><i data-icon="fileText"></i><span>Expenses Report</span></button>
 
-      <div class="navGroup">Reports</div>
-      <button class="navBtn" data-screen="stockLevel">📉 Stock Level</button>
-      <button class="navBtn" data-screen="dailyStockLevel">📋 Daily Stock Level</button>
-      <button class="navBtn" data-screen="dailySalesReport">📊 Daily Sales Report</button>
-      <button class="navBtn" data-screen="wholesaleReport">🧾 Wholesale Report</button>
-      <button class="navBtn" data-screen="goodsReceivedReport">📦 Goods Received Report</button>
-      <button class="navBtn" data-screen="adjustmentReport">🔄 Adjustment Report</button>
-      <button class="navBtn" data-screen="endOfDay">🧮 End of Day Balancing</button>
+        <div class="navGroup">Reports</div>
+        <button class="navBtn" data-screen="stockLevel"><i data-icon="trendDown"></i><span>Stock Level</span></button>
+        <button class="navBtn" data-screen="dailyStockLevel"><i data-icon="clipboard"></i><span>Daily Stock Level</span></button>
+        <button class="navBtn" data-screen="dailySalesReport"><i data-icon="barChart"></i><span>Daily Sales Report</span></button>
+        <button class="navBtn" data-screen="wholesaleReport"><i data-icon="receipt"></i><span>Wholesale Report</span></button>
+        <button class="navBtn" data-screen="goodsReceivedReport"><i data-icon="package"></i><span>Goods Received Report</span></button>
+        <button class="navBtn" data-screen="adjustmentReport"><i data-icon="refresh"></i><span>Adjustment Report</span></button>
+        <button class="navBtn" data-screen="endOfDay"><i data-icon="calculator"></i><span>End of Day Balancing</span></button>
+      </nav>
 
+      <div class="sideFoot">BESTIAN COMPANY LTD<br>0538500673 · 0503384635</div>
     </aside>
+    <div class="scrim" id="scrim"></div>
 
-    <!-- MAIN -->
-    <main class="main">
-      <h1 class="pageTitle" id="pageTitle">Dashboard</h1>
-      <section id="screen"></section>
-    </main>
+    <div class="content">
 
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <button class="iconBtn menuBtn" id="menuToggle" aria-label="Menu"><i data-icon="menu"></i></button>
+
+        <div class="topSearch" id="topSearch">
+          <i data-icon="search"></i>
+          <input id="globalSearch" type="search" placeholder="Search products, customers, suppliers..." autocomplete="off" />
+          <div class="searchResults" id="searchResults"></div>
+        </div>
+
+        <div class="topRight">
+          <div class="dropWrap">
+            <button class="iconBtn" id="themeBtn" aria-label="Theme" title="Theme"><i data-icon="moon"></i></button>
+            <div class="dropMenu" id="themeMenu">
+              <div class="dropLabel">Theme</div>
+              <button class="dropItem" data-theme-pick="light"><i data-icon="sun"></i>Light</button>
+              <button class="dropItem" data-theme-pick="dark"><i data-icon="moon"></i>Dark</button>
+              <button class="dropItem" data-theme-pick="glass"><i data-icon="sparkles"></i>Gradient Glass</button>
+            </div>
+          </div>
+
+          <button class="iconBtn bellBtn" id="bellBtn" aria-label="Low stock alerts" title="Low stock alerts">
+            <i data-icon="bell"></i><span class="badge" id="bellBadge" hidden>0</span>
+          </button>
+
+          <div class="dropWrap">
+            <button class="userChip" id="userBtn">
+              <span class="avatar" id="userAvatar">--</span>
+              <span class="userText">
+                <span class="userName" id="userName"></span>
+                <span class="userRole" id="whoami"></span>
+              </span>
+              <i data-icon="chevDown" class="chev"></i>
+            </button>
+            <div class="dropMenu" id="userMenu">
+              <div class="dropLabel" id="userShop"></div>
+              <button class="dropItem danger" id="logoutBtn"><i data-icon="logout"></i>Logout</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- MAIN -->
+      <main class="main">
+        <div class="pageHead">
+          <div>
+            <h1 class="pageTitle" id="pageTitle">Dashboard</h1>
+            <div class="pageSub" id="pageSub"></div>
+          </div>
+          <div class="dateChip">
+            <i data-icon="calendar"></i>
+            <div><div class="dateChipLbl">Today</div><div class="dateChipVal" id="todayChip"></div></div>
+          </div>
+        </div>
+        <section id="screen"></section>
+      </main>
+
+    </div>
   </div>
 
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js?v=3"></script>
   <script>
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
   </script>
